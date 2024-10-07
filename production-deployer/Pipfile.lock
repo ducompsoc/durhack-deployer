@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3247c9aa59dd2251661896f1ab6f82bbd51db7d7e7e4f0f0795f0cce18067687"
+            "sha256": "f0ddbd320240bc82bffd702111f48b02ddf2e9f02c512f483d7259b5e578016d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -39,6 +39,14 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==8.1.7"
+        },
+        "crossplane": {
+            "hashes": [
+                "sha256:b193bd8b963a041d5414ea18dcbb1c55b5424fee3d73bfa1809124605b322101",
+                "sha256:ede8e83c9e3a58dfc37c69f5ee065d4b3adc44ae42749ced496962a0e7f545b7"
+            ],
+            "index": "pypi",
+            "version": "==0.5.8"
         },
         "flask": {
             "hashes": [
