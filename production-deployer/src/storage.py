@@ -11,8 +11,10 @@ environment = {
     **dotenv_values(),
 }
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Event(Base):
     __tablename__ = "event"
@@ -20,5 +22,6 @@ class Event(Base):
 
     def __repr__(self) -> str:
         return f"Event(id={self.id!r})"
+
 
 engine = create_async_engine(environment["DATABASE_URL"], echo=True)
