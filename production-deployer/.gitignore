@@ -1,0 +1,27 @@
+# Exclude everything
+/*
+
+# Include specifically
+
+## Important Git files
+!.gitmodules
+!.gitignore
+!.gitattributes
+!.git-blame-ignore-revs
+
+## Pipenv
+!Pipfile
+!Pipfile.lock
+
+## Tooling config
+!/alembic.ini
+
+## App configuration templates
+!*.template.*
+
+## Sources
+!/src
+!/config
+!/alembic
+
+# Explicit exceptions/ignores
