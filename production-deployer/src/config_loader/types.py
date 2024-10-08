@@ -1,0 +1,1 @@
+type Record = dict[str, Record | object]
