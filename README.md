@@ -8,15 +8,13 @@ and production.
 .
 ├── production-deployer  
 │   └── ...  # Python project installed on the DurHack VPS which auto-deploys production configuration files
-├── development-sites-available
+├── development
 │   ├── ...  # contains development nginx configuration files
-│   └── api.durhack-dev.com
-├── production-sites-available
+│   └── [api.durhack-dev.com]  # the .conf / .disabled suffix is omitted as development configs are strictly neither
+├── production
 │   ├── ...  # contains production nginx configuration files 
-│   └── api.durhack.com
-├── production-sites-enabled
-│   ├── ...  # contains symbolic links to files in production-sites-available
-│   └── api.durhack.com -> ../production-sites-available/api.durhack.com
+│   ├── [auth.durhack.com].conf  # an enabled production configuration 
+│   └── [api.durhack.com].disabled  # a disabled production configuration
 └── README.md
 ```
 
@@ -87,7 +85,7 @@ and production.
    of this repository
    ```bash
    /etc/nginx$ cd conf.d
-   /etc/nginx/conf.d$ for file in /home/[username]/Projects/durhack-nginx/development-sites-available/*; do
+   /etc/nginx/conf.d$ for file in /home/[username]/Projects/durhack-nginx/development/*; do
        basename="${file/*\//}"
        sudo ln -s $file "./$basename.disabled"
    done
