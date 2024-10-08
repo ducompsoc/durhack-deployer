@@ -1,0 +1,2 @@
+# ignore any filenames whose names begin with 'local'
+local*
