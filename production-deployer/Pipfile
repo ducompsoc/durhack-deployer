@@ -17,6 +17,7 @@ pydantic = ">=2.9.2, ==2.*"  # analogous to Zod; a data validation library
 sqlalchemy = ">=2.0.35, ==2.*"  # analogous to @prisma/client: an ORM
 python-dotenv = ">=1.0.1, ==1.*"  # load values from `.env` files
 psycopg = ">=3.2.3, ==3.*"  # postgresql database client for Python
+requests-cache = ">=1.2.1, ==1.*"  # analogous to 'fetch'; an HTTP/1.1 client with response-caching capabilities
 
 [dev-packages]
 ruff = ">=0.6.9, ==0.6.*"  # analogous to Biome; a linter/formatter for Python
