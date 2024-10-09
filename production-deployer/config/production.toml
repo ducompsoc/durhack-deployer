@@ -1,0 +1,5 @@
+origin = "https://deploy.durhack.com"
+
+[proxy_fix]  # in production, behind nxinx only
+x_for = 1
+x_proto = 1

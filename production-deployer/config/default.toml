@@ -1,1 +1,10 @@
+origin = "http://deploy.durhack-dev.com"
 webhook_secret_token = "not-a-real-secret-token"
+
+[listen]
+host = "localhost"
+port = 3400
+
+[proxy_fix]  # in development, behind both nginx and https://smee.io
+x_for = 2
+x_proto = 2
