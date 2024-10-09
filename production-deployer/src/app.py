@@ -2,12 +2,12 @@ from flask import Flask, request, make_response
 from werkzeug.routing import Rule
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+from config import config
+
 app = Flask(__name__)
 
-# in development, the app is behind https://smee.io
-# in production, the app is behind nginx
 app.wsgi_app = ProxyFix(
-    app.wsgi_app, x_for=1, x_proto=1,
+    app.wsgi_app, **vars(config.proxy_fix)
 )
 
 
@@ -26,7 +26,7 @@ app.url_map.add(Rule('/', endpoint='method-not-allowed'))
 @app.route("/github-webhook", methods=["POST"])
 def github_webhook():
     content = request.json
-    print(request.headers)
+    print(request.origin)
 
     # a few things need to happen here, mainly validation. We need to validate that:
     #  - the webhook payload came from GitHub (https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries)
@@ -62,4 +62,4 @@ def method_not_allowed():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host=config.listen.host, port=config.listen.port)
