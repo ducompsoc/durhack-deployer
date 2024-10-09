@@ -1,8 +1,11 @@
+from ipaddress import ip_address
+
 from flask import Flask, request, make_response
 from werkzeug.routing import Rule
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import config
+from github_meta import ensure_ip_is_github_hooks_ip
 
 app = Flask(__name__)
 
@@ -24,13 +27,14 @@ app.url_map.add(Rule('/', endpoint='method-not-allowed'))
 
 
 @app.route("/github-webhook", methods=["POST"])
-def github_webhook():
+async def github_webhook():
     content = request.json
-    print(request.origin)
 
     # a few things need to happen here, mainly validation. We need to validate that:
     #  - the webhook payload came from GitHub (https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries)
     #  - the request origin IP address is one of GitHub's (https://api.github.com/meta)
+    remote_ip = ip_address(request.remote_addr)
+    await ensure_ip_is_github_hooks_ip(remote_ip)
     #  - the event described by the payload is an event from the https://github.com/ducompsoc/durhack-nginx repository
     # if any of the above conditions fail, respond immediately with a 4xx status code.
 
