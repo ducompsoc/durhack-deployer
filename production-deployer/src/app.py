@@ -1,6 +1,6 @@
 from ipaddress import ip_address
 
-from flask import Flask, request, make_response
+from flask import Flask, Response, request, make_response
 from werkzeug.routing import Rule
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -15,7 +15,7 @@ app.wsgi_app = ProxyFix(
 
 
 @app.route("/")
-def root_route():
+def root_route() -> Response:
     return make_response({
         "status": 200,
         "message": "OK",
@@ -27,7 +27,7 @@ app.url_map.add(Rule('/', endpoint='method-not-allowed'))
 
 
 @app.route("/github-webhook", methods=["POST"])
-async def github_webhook():
+async def github_webhook() -> Response:
     content = request.json
 
     # a few things need to happen here, mainly validation. We need to validate that:
@@ -53,12 +53,12 @@ app.url_map.add(Rule('/github-webhook', endpoint='method-not-allowed'))
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def catch_all(path):
+def catch_all(path) -> Response:
     return make_response({"status": 404, "message": "Not Found"}, 404)
 
 
 @app.endpoint('method-not-allowed')
-def method_not_allowed():
+def method_not_allowed() -> Response:
     return make_response({
         "status": 405,
         "message": "Method Not Allowed",
