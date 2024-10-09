@@ -6,7 +6,7 @@ name = "pypi"
 [scripts]
 create-migration = "alembic revision"
 migrate-dev = "alembic upgrade head"
-smee-dev = "smee --target http://deploy.durhack-dev.com/github-webhook"  # pnpm install -g smee-client
+gosmee-dev = "gosmee client https://hook.pipelinesascode.com/ThqAwpBYXGkT http://deploy.durhack-dev.com/github-webhook"  # https://github.com/chmouel/gosmee/#install
 dev = "python src/app.py"
 
 [packages]
