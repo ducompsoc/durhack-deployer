@@ -10,7 +10,7 @@ smee-dev = "smee --target http://deploy.durhack-dev.com/github-webhook"  # pnpm 
 dev = "python src/app.py"
 
 [packages]
-flask = ">=3.0.3, ==3.*"  # analogous to Express; the framework
+flask = { extras = ["async"], version = ">=3.0.3, ==3.*" }
 watchdog = ">=5.0.3, ==5.*"  # file watcher - intend to use this for listening for lockfiles being removed
 crossplane = ">=0.5.8, ==0.5.*"  # nginx config parser - use this to find domain names / patch config files accordingly
 pydantic = ">=2.9.2, ==2.*"  # analogous to Zod; a data validation library
