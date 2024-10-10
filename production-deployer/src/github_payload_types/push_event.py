@@ -2,6 +2,9 @@ from typing import TypedDict, NotRequired
 
 from .commit_entity import CommitEntity
 from .committer_or_author_entity import CommitterOrAuthorEntity
+from .repository_entity import RepositoryEntity
+from .simple_user_entity import SimpleUserEntity
+
 
 # https://docs.github.com/en/webhooks/webhook-events-and-payloads#push
 class PushEvent(TypedDict):
@@ -14,8 +17,8 @@ class PushEvent(TypedDict):
     forced: bool
     head_commit: CommitEntity
     installation: NotRequired[object]
-    organization: NotRequired[object]
+    organization: NotRequired[SimpleUserEntity]
     pusher: CommitterOrAuthorEntity
     ref: str
-    repository: object
-    sender: object
+    repository: RepositoryEntity
+    sender: SimpleUserEntity
