@@ -30,17 +30,17 @@ app.url_map.add(Rule('/', endpoint='method-not-allowed'))
 
 @app.route("/github-webhook", methods=["POST"])
 async def github_webhook() -> Response:
-    # a few things need to happen here, mainly validation. We need to validate that:
-    #  - the webhook payload came from GitHub (https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries)
+    # ensure the request origin IP address is one of GitHub's (https://api.github.com/meta)
+    remote_ip = ip_address(request.remote_addr)
+    await ensure_ip_is_github_hooks_ip(remote_ip)
+
+    # verify the webhook payload came from GitHub (https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries)
     payload_body = request.get_data()
     signature_from_requester = request.headers.get("X-Hub-Signature-256")
     signature_verifier.verify(payload_body, signature_from_requester)
-    
-    #  - the request origin IP address is one of GitHub's (https://api.github.com/meta)
-    remote_ip = ip_address(request.remote_addr)
-    await ensure_ip_is_github_hooks_ip(remote_ip)
-    #  - the event described by the payload is an event from the https://github.com/ducompsoc/durhack-nginx repository
-    # if any of the above conditions fail, respond immediately with a 4xx status code.
+
+    # ensure the event described by the payload is an event from the https://github.com/ducompsoc/durhack-nginx repository
+    payload  = request.get_json()
 
     # Then, add the event to a queue for processing (this ensures we can always send a 2xx response to GitHub in a timely manner)
     # the event metadata needs to include 
