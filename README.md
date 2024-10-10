@@ -22,6 +22,7 @@ and production.
 
 1. If you are on Windows, [set up Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
    and ensure you are using the 'Ubuntu' terminal for all further steps.
+   If you are using macOS or another Unix-based operating system, you're good!
 2. **(Optional, Recommended)** Set up SSH public-key authentication for GitHub.
    1. As a preface, it's worth reading about [SSH (wikipedia)](https://en.wikipedia.org/wiki/Secure_Shell#Definition) 
       so you understand why you are doing this.
