@@ -6,8 +6,10 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import config
 from github_meta import ensure_ip_is_github_hooks_ip
+from payload_signature_verifier import PayloadSignatureVerifier
 
 app = Flask(__name__)
+signature_verifier = PayloadSignatureVerifier(config.webhook_secret_token)
 
 app.wsgi_app = ProxyFix(
     app.wsgi_app, **vars(config.proxy_fix)
@@ -28,10 +30,12 @@ app.url_map.add(Rule('/', endpoint='method-not-allowed'))
 
 @app.route("/github-webhook", methods=["POST"])
 async def github_webhook() -> Response:
-    content = request.json
-
     # a few things need to happen here, mainly validation. We need to validate that:
     #  - the webhook payload came from GitHub (https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries)
+    payload_body = request.get_data()
+    signature_from_requester = request.headers.get("X-Hub-Signature-256")
+    signature_verifier.verify(payload_body, signature_from_requester)
+    
     #  - the request origin IP address is one of GitHub's (https://api.github.com/meta)
     remote_ip = ip_address(request.remote_addr)
     await ensure_ip_is_github_hooks_ip(remote_ip)
