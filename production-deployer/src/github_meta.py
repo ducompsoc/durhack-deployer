@@ -5,6 +5,8 @@ from aiohttp import ClientResponse
 from aiohttp_client_cache import CachedSession, CacheBackend
 from werkzeug.exceptions import Forbidden
 
+from config import config
+
 cache = CacheBackend(cache_control=True)
 
 type Network = list[IPv4Network | IPv6Network]
@@ -16,8 +18,13 @@ type GitHubMetaResponseBody = TypedDict("GitHubMetaResponse", {
 
 async def fetch_github_meta() -> ClientResponse:
     async with CachedSession(cache=cache) as session:
-        # todo: this needs to be authenticated using a GitHub PAT. otherwise we will probably get rate-limited (60 RPM)
-        async with session.get("https://api.github.com/meta") as response:
+        async with session.get(
+            "https://api.github.com/meta", 
+            headers={
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28"
+            }
+        ) as response:
             return response
 
 
