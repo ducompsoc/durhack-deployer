@@ -45,7 +45,7 @@ and production.
    # If you didn't... 
    # generate a GitHub Personal Access Token with access to this repository:
    # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-   #                    vvvvv replace <PAT> with your personal access token
+   #                                vvvvv replace <PAT> with your personal access token
    ~/Projects$ git clone -- https://<PAT>@github.com/ducompsoc/durhack-nginx.git ./durhack-nginx  
    #                         you can specify a different directory to clone into ^^^^^^^^^^^^^^^ 
    ```
