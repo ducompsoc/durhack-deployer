@@ -13,7 +13,7 @@ class RepositorySimpleUserEntity(SimpleUserEntity):
 
 
 # https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#get-a-repository
-class RepositoryEntityBase(TypedDict, total=False):
+class _RepositoryEntityBase(TypedDict, total=False):
     id: Required[int]
     node_id: Required[str]
     name: Required[str]
@@ -110,11 +110,11 @@ class RepositoryEntityBase(TypedDict, total=False):
     anonymous_access_enabled: bool
     
 
-class RepositoryEntity(RepositoryEntityBase, total=False):
+class RepositoryEntity(_RepositoryEntityBase, total=False):
     starred_at: str
 
 
-class FullRepositoryEntity(RepositoryEntityBase, total=False):
+class FullRepositoryEntity(_RepositoryEntityBase, total=False):
     code_of_conduct: RepositorySimpleCodeOfConductEntity  # **
     security_and_analysis: RepositorySecurityAndAnalysisEntity | None  # **
     custom_properties: dict[str, object]  # **
