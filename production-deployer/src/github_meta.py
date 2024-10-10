@@ -5,8 +5,6 @@ from aiohttp import ClientResponse
 from aiohttp_client_cache import CachedSession, CacheBackend
 from werkzeug.exceptions import Forbidden
 
-from config import config
-
 cache = CacheBackend(cache_control=True)
 
 type Network = list[IPv4Network | IPv6Network]
