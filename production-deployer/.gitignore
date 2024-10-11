@@ -3,6 +3,9 @@
 
 # Include specifically
 
+## Markdowns
+!*.md
+
 ## Important Git files
 !.gitmodules
 !.gitignore
