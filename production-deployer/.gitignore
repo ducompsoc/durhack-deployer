@@ -18,12 +18,14 @@
 
 ## Tooling config
 !/alembic.ini
+!/.env.celery
 
 ## App configuration templates
 !.env.template
 
 ## Sources
 !/src
+!/scripts
 !/config
 !/alembic
 
