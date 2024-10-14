@@ -57,8 +57,10 @@ def durhack_deployer_json_dumps(obj):
 def durhack_deployer_json_loads(obj):
     return json.loads(obj, object_hook=durhack_deployer_decode_object_hook)
 
+durhack_deployer_json_kombu_serializer_name = 'durhack-deployer-json'
+
 register(
-    'durhack-deployer-json',
+    durhack_deployer_json_kombu_serializer_name,
     durhack_deployer_json_dumps,
     durhack_deployer_json_loads,
     content_type='application/vnd.durhack-deployer+json',
