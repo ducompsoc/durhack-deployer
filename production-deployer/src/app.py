@@ -39,16 +39,15 @@ async def github_webhook() -> Response:
     signature_from_requester = request.headers.get("X-Hub-Signature-256")
     signature_verifier.verify(payload_body, signature_from_requester)
 
-    # ensure the event described by the payload is an event from the https://github.com/ducompsoc/durhack-nginx repository
-    payload  = request.get_json()
+    payload = request.get_json()
 
     # Then, add the event to a queue for processing (this ensures we can always send a 2xx response to GitHub in a timely manner)
-    # the event metadata needs to include 
+    # the event metadata needs to include
     # - the `X-GitHub-Event` request header (which contains the event type)
     # - the `X-GitHub-Delivery` request header (which contains a unique ID for the event represented by the payload)
     # - the request body
 
-    # Finally, respond with a 2xx status code 
+    # Finally, respond with a 2xx status code
     return make_response("", 204)
 
 
