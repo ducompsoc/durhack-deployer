@@ -10,7 +10,7 @@ gosmee-dev = "gosmee client https://hook.pipelinesascode.com/ThqAwpBYXGkT http:/
 dev = "python src/app.py"
 
 [packages]
-flask = { extras = ["async"], version = ">=3.0.3, ==3.*" }
+flask = { extras = ["async"], version = ">=3.0.3, ==3.*" }  # analogous-ish to Express; a framework for defining HTTP request handlers with middleware
 watchdog = ">=5.0.3, ==5.*"  # file watcher - intend to use this for listening for lockfiles being removed
 crossplane = ">=0.5.8, ==0.5.*"  # nginx config parser - use this to find domain names / patch config files accordingly
 pydantic = ">=2.9.2, ==2.*"  # analogous to Zod; a data validation library
