@@ -20,7 +20,7 @@
 !/alembic.ini
 
 ## App configuration templates
-!*.template.*
+!.env.template
 
 ## Sources
 !/src
