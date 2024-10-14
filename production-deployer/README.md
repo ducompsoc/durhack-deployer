@@ -1,5 +1,21 @@
 # durhack-nginx/production-deployer
 
+## Current problems
+- Celery is not suited to `async` operations
+- Celery is not fit-for-purpose. it is really meant for handling a high volume of small messages. We have a small volume
+  of larger messages.
+
+### Ideas
+- Use the filesystem as our queue instead of Celery; we can use a file-watcher to detect changes (additions to the queue)
+  - i.e. a directory roughly corresponds to a 'queue'. the files within the directory are the queue entries
+  - each queue entry can be named with an epoch timestamp such that lexicographic ordering should yield the correct order
+    of events
+- Each queue worker can run on an `asyncio` event loop
+  - 1 worker+queue that handles all GitHub events and forwards them to the appropriate queue, or voids them if
+  - 1 worker+queue per repository deployment (i.e. `durhack` and `durhack-staging` should be distinct)
+- Use [redis-lock](https://github.com/miintto/redis-lock-py) where inter-process locking is necessary
+- Use PM2 to manage the Flask app & worker python processes
+
 ## Stack/Tooling
 - Most dependencies are explained by comments in `Pipfile`, which is analogous to `package.json` in a JavaScript project.
   The program that interacts with / restores environment using the `Pipfile` is [pipenv](https://pipenv.pypa.io/en/latest/)
