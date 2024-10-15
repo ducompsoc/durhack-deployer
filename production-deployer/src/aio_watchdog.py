@@ -1,4 +1,5 @@
 import asyncio
+from types import TracebackType
 from typing import override
 from pathlib import Path
 from os import PathLike
@@ -96,3 +97,13 @@ class AIOWatchdog:
     def stop(self) -> None:
         self._observer.stop()
         self._observer.join()
+
+    def __enter__(self) -> None:
+        self.start()
+
+    def __exit__(self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.stop()
