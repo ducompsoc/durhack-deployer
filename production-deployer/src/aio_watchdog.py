@@ -36,8 +36,8 @@ For example usage, see https://github.com/biesnecker/hachiko/blob/ad1ca33beaa705
 
 
 class AIOEventHandler(FileSystemEventHandler):
-    def __init__(self, loop: asyncio.BaseEventLoop | None = None):
-        super()
+    def __init__(self, loop: asyncio.AbstractEventLoop | None = None):
+        super().__init__()
         self._loop = loop if loop is not None else asyncio.get_running_loop()
 
     @override
