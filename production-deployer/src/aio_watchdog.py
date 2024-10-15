@@ -4,7 +4,25 @@ from pathlib import Path
 from os import PathLike
 
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
+from watchdog.events import (
+    DirCreatedEvent,
+    DirDeletedEvent,
+    DirModifiedEvent,
+    DirMovedEvent,
+
+    FileClosedEvent,
+    FileClosedNoWriteEvent,
+    FileCreatedEvent,
+
+    FileSystemEvent,
+    FileSystemEventHandler,
+    FileMovedEvent,
+
+    FileDeletedEvent,
+    FileModifiedEvent,
+
+    FileOpenedEvent,
+)
 
 """
 The contents fo this file are loosely based upon hachiko, Copyright (c) 2023 John Biesnecker
@@ -17,14 +35,46 @@ For example usage, see https://github.com/biesnecker/hachiko/blob/ad1ca33beaa705
 
 
 class AIOEventHandler(FileSystemEventHandler):
-    def __init__(self, loop: asyncio.EventLoop | None = None):
+    def __init__(self, loop: asyncio.BaseEventLoop | None = None):
         super()
-        self._loop = loop if loop is not None else asyncio.get_event_loop()
+        self._loop = loop if loop is not None else asyncio.get_running_loop()
+
+    @override
+    async def on_any_event(self, event: FileSystemEvent) -> None:
+        pass
+
+    @override
+    async def on_moved(self, event: DirMovedEvent | FileMovedEvent) -> None:
+        pass
+
+    @override
+    async def on_created(self, event: DirCreatedEvent | FileCreatedEvent) -> None:
+        pass
+
+    @override
+    async def on_deleted(self, event: DirDeletedEvent | FileDeletedEvent) -> None:
+        pass
+
+    @override
+    async def on_modified(self, event: DirModifiedEvent | FileModifiedEvent) -> None:
+        pass
+
+    @override
+    async def on_closed(self, event: FileClosedEvent) -> None:
+        pass
+
+    @override
+    async def on_closed_no_write(self, event: FileClosedNoWriteEvent) -> None:
+        pass
+
+    @override
+    async def on_opened(self, event: FileOpenedEvent) -> None:
+        pass
 
     @override
     def dispatch(self, event: FileSystemEvent) -> None:
         self._loop.call_soon_threadsafe(asyncio.create_task, self.on_any_event(event))
-        self._loop.call_soon_threadsafe(asyncio.create_task, getattr(self, f"on_{event.event_type}"))
+        self._loop.call_soon_threadsafe(asyncio.create_task, getattr(self, f"on_{event.event_type}")(event))
 
 
 class AIOWatchdog:
@@ -38,7 +88,7 @@ class AIOWatchdog:
         self._observer = observer if observer is not None else Observer()
         self._path = path if isinstance(path, Path) else Path(path)
         event_handler = event_handler or AIOEventHandler()
-        self._observer.schedule(event_handler, str(self._path), recursive)
+        self._observer.schedule(event_handler, str(self._path), recursive=recursive)
 
     def start(self) -> None:
         self._observer.start()
