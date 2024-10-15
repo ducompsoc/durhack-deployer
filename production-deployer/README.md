@@ -30,53 +30,44 @@
   - it uses [sqlalchemy](https://www.sqlalchemy.org/), a Python ORM, to access a postgres database
   - it uses [alembic](https://alembic.sqlalchemy.org/en/latest/), a database migration tool, to manage changes to
     the database (hopefully) without losing access to data
-- The application employs a task queue to ensure it can respond to webhook requests in a timely manner.
-  Joe chose [celery](https://docs.celeryq.dev/en/main/getting-started/introduction.html) for its popularity & because
-  it is commonly used with Flask. Celery consists of
-  - a message broker to send and receive messages (bring your own, look ahead for Joe's choice)
-  - the celery client (a Python library), which enables enqueueing tasks to the broker and registering task handlers to
-    be invoked by the broker
-  - the celery worker (a command-line app which invokes Python functions registered by the celery client in order to
-    handle queued tasks)
-- For Celery's message broker, Joe chose to use [RabbitMQ](https://www.rabbitmq.com/) for its popularity and
-  redundancy (unprocessed tasks persist through loss of power, etc.)
-  - `lsb_release -a` to check your Ubuntu version
-  - [Install RabbitMQ](https://www.rabbitmq.com/docs/install-debian#apt-cloudsmith) for your Ubuntu version
-  - [Configure RabbitMQ for Celery](https://docs.celeryq.dev/en/latest/getting-started/backends-and-brokers/rabbitmq.html)
-    - `sudo rabbitmqctl add_user durhack-nginx-deployer [password]`
-    - `sudo rabbitmqctl add_vhost durhack-nginx-deployer`
-    - `sudo rabbitmqctl set_permissions -p durhack-nginx-deployer durhack-nginx-deployer ".*" ".*" ".*"`
-    - Override the `celery_task_broker_uri` from `config/default.toml` with the appropriate value by adding an entry to
-      `config/local.toml`
-- The celery worker is a long-running program we wish to run in the background, so we 'daemonize' it (configure an
-  init-system to manage it for us)
-  - Create a `systemd` service file (at `/etc/systemd/system/durhack-nginx-deployer-worker.service`). It
-    should look a bit like this:
-    ```ini
+- To facilitate 'locking' inter-process shared resource to prevent concurrent access, we want an in-memory database.
+  Joe chose [dragonfly](https://www.dragonflydb.io), which is "a drop-in Redis replacement".
+  - [copy the download link for a dragonfly executable archive](https://github.com/dragonflydb/dragonfly/releases) (usually, `x86-64.tar.gz`)
+  - `sudo mkdir /opt/dragonfly/ && cd /opt/dragonfly` - create `/opt/dragonfly` and `cd` into it
+  - `sudo wget [paste link]` - download the archive you copied the link for
+  - `sudo mkdir ./dragonfly-v1.23.2` - create a directory for the version you downloaded (get version number from GitHub)
+  - `sudo tar -xf dragonfly-x86_64.tar.gz -C ./dragonfly-v1.23.2` - unpack the archive into the directory you created
+  - `sudo rm dragonfly-x84_64.tar.gz` - remove the archive as we don't need it anymore
+  - `sudo ln -s ./dragonfly-v1.23.2 ./dragonfly-current` - create a symlink `dragonfly-current` which points to `dragonfly-v1.23.2`
+  - `sudo ln -s /opt/dragonfly/dragonfly-current/dragonfly-x86_64 /usr/local/bin/dragonfly` - create a symlink `dragonfly` in `/usr/local/bin`
+    which points to the binary `dragonfly-x84_64` in `/opt/dragonfly/dragonfly-current`
+  - `dragonfly --help` to test that dragonfly has successfully been installed
+  - `sudo apt install redis-tools` so we can use `redis-cli` as a database client for dragonfly
+  - Create a new user `dragonfly` with homedir `/var/lib/dragonfly`
+    - `sudo adduser dragonfly --group --system --disabled-password --home /var/lib/dragonfly --shell /bin/bash`
+    - `cd /var/lib && sudo chmod o+rx dragonfly` to enable read and execute perms to 'others' on dragonfly's homedir
+  - Create a service file at `/etc/systemd/system/dragonfly.service`:
+    ```
     [Unit]
-    Description=Celery task queue worker for durhack-nginx-deployer
-    After=network.target rabbitmq-server.service
-    Requires=rabbitmq-server.service
+    Description=Dragonfly In-Memory Data Store
+    After=network.target
 
     [Service]
-    Type=forking
-    User=durhack-nginx-deployer
-    Group=durhack-nginx-deployer
-    WorkingDirectory=/var/www/durhack-nginx/production-deployer
-    ExecStart=/bin/bash -c "./scripts/start-worker.sh"
-    ExecStop=/bin/bash -c "./scripts/stop-worker.sh"
-    ExecReload=/bin/bash -c "./scripts/reload-worker.sh"
+    User=dragonfly
+    Group=dragonfly
+    ExecStart=/usr/local/bin/dragonfly --dir /var/lib/dragonfly
+    ExecStop=/usr/bin/redis-cli shutdown
     Restart=always
 
     [Install]
     WantedBy=multi-user.target
     ```
-    Make sure you amend the `WorkingDirectory` option appropriately. Notes on creating the `durhack-nginx-deployer` user
-    are further on.
+  - `sudo systemctl daemon-reload` so that `systemd` will check for new service units,
+  - `sudo systemctl start dragonfly` to start dragonfly as a daemon (background process)
 - About the `durhack-nginx-deployer` user
   - **Q: Why don't we just use `root`?**
-    **A:** running a celery worker as `root` is [ill-advised](https://docs.celeryq.dev/en/main/userguide/daemonizing.html#running-the-worker-with-superuser-privileges-root)
-    as celery can theoretically execute arbitrary code.
+    **A:** anything that does not need to run as `root`, should not run as `root`.
+    Setting up fine-grained access control protects us from ourselves **and** malicious actors.
   - That said, permissions are going to be tricky ...
     - the user needs to be able to run the `certbot` CLI (which requires `root` privileges)
     - the user needs to be able to run `systemctl reload nginx` as `root` (but not any other `systemctl` commands)
