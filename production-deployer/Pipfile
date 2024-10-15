@@ -18,7 +18,6 @@ sqlalchemy = ">=2.0.35, ==2.*"  # analogous to @prisma/client: an ORM
 python-dotenv = ">=1.0.1, ==1.*"  # load values from `.env` files
 psycopg = ">=3.2.3, ==3.*"  # postgresql database client for Python
 aiohttp-client-cache = ">=0.12.2, ==0.12.*"  # analogous to 'fetch'; an HTTP/1.1 client with response-caching capabilities
-celery = ">=5.4.0, ==5.*"   # the Celery task queue client - provides APIs to submit tasks for processing & register task handlers to be run by workers
 
 [dev-packages]
 ruff = ">=0.6.9, ==0.6.*"  # analogous to Biome; a linter/formatter for Python
