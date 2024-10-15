@@ -5,8 +5,9 @@ from werkzeug.routing import Rule
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import config
-from github_meta import ensure_ip_is_github_hooks_ip
-from payload_signature_verifier import PayloadSignatureVerifier
+
+from .github_meta import ensure_ip_is_github_hooks_ip
+from .payload_signature_verifier import PayloadSignatureVerifier
 
 app = Flask(__name__)
 signature_verifier = PayloadSignatureVerifier(config.webhook_secret_token)

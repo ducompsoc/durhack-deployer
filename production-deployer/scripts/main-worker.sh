@@ -8,6 +8,4 @@ source "$PROJECT_DIRNAME"/.venv/bin/activate
 . "$PROJECT_DIRNAME"/.env.celery
 export PYTHONPATH="$PROJECT_DIRNAME"/src:"$PYTHONPATH"
 
-celery -A "$CELERY_APP" multi restart ${CELERYD_NODES} \
-  --pidfile=${CELERYD_PID_FILE} --logfile=${CELERYD_LOG_FILE} \
-  --loglevel="${CELERYD_LOG_LEVEL}" $CELERYD_OPTS
+python -m main_queue_worker.app
