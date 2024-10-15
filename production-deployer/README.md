@@ -45,7 +45,8 @@
   - `sudo apt install redis-tools` so we can use `redis-cli` as a database client for dragonfly
   - Create a new user `dragonfly` with homedir `/var/lib/dragonfly`
     - `sudo adduser dragonfly --group --system --disabled-password --home /var/lib/dragonfly --shell /bin/bash`
-    - `cd /var/lib && sudo chmod o+rx dragonfly` to enable read and execute perms to 'others' on dragonfly's homedir
+    - `cd /var/lib && sudo chmod o+rx dragonfly` - to others (`o`), add (`+`) read (`r`) and execute (`x`) perms on
+      dragonfly's home directory
   - Create a service file at `/etc/systemd/system/dragonfly.service`:
     ```
     [Unit]
