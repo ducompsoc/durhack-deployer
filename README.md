@@ -1,4 +1,4 @@
-# durhack-nginx/production-deployer
+# durhack-deployer
 
 ## Current problems
 - Celery is not suited to `async` operations
@@ -65,7 +65,7 @@
     ```
   - `sudo systemctl daemon-reload` so that `systemd` will check for new service units,
   - `sudo systemctl start dragonfly` to start dragonfly as a daemon (background process)
-- About the `durhack-nginx-deployer` user
+- About the `durhack-deployer` user
   - **Q: Why don't we just use `root`?**
     **A:** anything that does not need to run as `root`, should not run as `root`.
     Setting up fine-grained access control protects us from ourselves **and** malicious actors.
@@ -77,7 +77,7 @@
     We will have to make use of a few systems to satisfy all constraints.
   - Create the user.
     ```bash
-    sudo adduser durhack-nginx-deployer --group --system --disabled-password --home /var/www/durhack-nginx/production-deployer --shell /bin/bash
+    sudo adduser durhack-deployer --group --system --disabled-password --home /var/www/durhack-deployer --shell /bin/bash
     ```
     - `--group`: also create a group with the same name as the user, and add the user to it
     - `--system`: create a system user (a user with 'account expiry: never', and a `uid` < 999)
@@ -87,33 +87,33 @@
   - We create a file in `/etc/sudoers.d` which will be included by `/etc/sudoers`.
     ```bash
     $ cd /etc/sudoers.d
-    /etc/sudoers.d$ sudo touch durhack-nginx-deployer`
+    /etc/sudoers.d$ sudo touch durhack-deployer`
     ```
-  - Add a directive granting `durhack-nginx-deployer` access to `certbot`
+  - Add a directive granting `durhack-deployer` access to `certbot`
     ```bash
-    /etc/sudoers.d$ sudo bash -c "cat >> durhack-nginx-deployer"
-    # allow `durhack-nginx-deployer` to run `certbot` as `root` without a password and with arbitrary arguments
-    durhack-nginx-deployer ALL=(ALL) NOPASSWD: /usr/bin/certbot
+    /etc/sudoers.d$ sudo bash -c "cat >> durhack-deployer"
+    # allow `durhack-deployer` to run `certbot` as `root` without a password and with arbitrary arguments
+    durhack-deployer ALL=(ALL) NOPASSWD: /usr/bin/certbot
     ^C
     ```
-  - Add a directive granting `durhack-nginx-deployer` access to `systemctl reload nginx`
+  - Add a directive granting `durhack-deployer` access to `systemctl reload nginx`
     ```bash
-    /etc/sudoers.d$ sudo bash -c "cat >> durhack-nginx-deployer"
-    # allow `durhack-nginx-deployer` to run `systemctl` as `root` without a password and only with the exact arguments `reload nginx`
-    durhack-nginx-deployer ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload nginx
+    /etc/sudoers.d$ sudo bash -c "cat >> durhack-deployer"
+    # allow `durhack-deployer` to run `systemctl` as `root` without a password and only with the exact arguments `reload nginx`
+    durhack-deployer ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload nginx
     ^C
     ```
-  - We edit the file access control list (FACL) of `/etc/nginx/conf.d` to permit `durhack-nginx-deployer` to
+  - We edit the file access control list (FACL) of `/etc/nginx/conf.d` to permit `durhack-deployer` to
     read from/write to its files.
     ```bash
     $ sudo apt install acl -y
     ...
     $ cd /etc/nginx
     /etc/nginx$ # modify the default ACL for the directory (only affects newly created files)
-    /etc/nginx$ sudo setfacl --default -m user:durhack-nginx-deployer:rw conf.d
+    /etc/nginx$ sudo setfacl --default -m user:durhack-deployer:rw conf.d
     /etc/nginx$ # modify the ACL of existing files
-    /etc/nginx$ sudo setfacl -R -m user:durhack-nginx-deployer:rw conf.d
+    /etc/nginx$ sudo setfacl -R -m user:durhack-deployer:rw conf.d
     /etc/nginx$ # modify the ACL of the directory to allow execution (necessary for creation/deletion of files within the directory)
-    /etc/nginx$ sudo setfacl -m user:durhack-nginx-deployer:rwx conf.d
+    /etc/nginx$ sudo setfacl -m user:durhack-deployer:rwx conf.d
     ```
-  - We are done! `sudo -u durhack-nginx-deployer -i` to start a login shell as `durhack-nginx-deployer`, `ctrl`+`D` to logout.
+  - We are done! `sudo -u durhack-deployer -i` to start a login shell as `durhack-deployer`, `ctrl`+`D` to logout.
