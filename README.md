@@ -24,8 +24,8 @@
   - This means that in production, you shouldn't just use the Flask development server.
     You should choose a WSGI server ([options](https://flask.palletsprojects.com/en/3.0.x/deploying/))
     and use that to run your WSGI (Flask) application.
-  - Joe chose [uWSGI](https://flask.palletsprojects.com/en/3.0.x/deploying/uwsgi/) because they had documentation
-    on managing their server/your apps [using a `systemd` service](https://uwsgi-docs.readthedocs.io/en/latest/Systemd.html)
+  - Joe chose [uWSGI](https://flask.palletsprojects.com/en/3.0.x/deploying/uwsgi/) because they had documentation on managing their server/your apps
+    [using a `systemd` service](https://uwsgi-docs.readthedocs.io/en/latest/Systemd.html)
 - The application needs to persist some information (specifically, GitHub event IDs of previously processed events)
   - it uses [sqlalchemy](https://www.sqlalchemy.org/), a Python ORM, to access a postgres database
   - it uses [alembic](https://alembic.sqlalchemy.org/en/latest/), a database migration tool, to manage changes to
