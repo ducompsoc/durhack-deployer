@@ -15,6 +15,9 @@
 ## Pipenv
 !Pipfile
 !Pipfile.lock
+!.venv
+.venv/*
+!.venv/.gitkeep
 
 ## Tooling config
 !/alembic.ini
