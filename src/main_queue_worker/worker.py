@@ -1,4 +1,9 @@
+from typing import override
+from pathlib import Path
+
 from data_types import GitHubEvent
+from json_serialization import durhack_deployer_json_load
+from queue_worker_base import QueueWorkerBase
 from storage import async_session, PersistedEvent
 
 
@@ -9,6 +14,13 @@ async def persist_handled_event(event: GitHubEvent) -> None:
         persisted_event = PersistedEvent(id=event.id)
         session.add(persisted_event)
         await session.commit()
+
+
+class MainQueueWorker(QueueWorkerBase):
+    @override
+    async def process_queue_item(self, queue_item_path: Path) -> None:
+        with open(queue_item_path) as queueItemHandle:
+            queue_item_payload = durhack_deployer_json_load(queueItemHandle)
 
 
 async def handle_event(event: GitHubEvent) -> None:
