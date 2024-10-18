@@ -2,6 +2,8 @@ from data_types import GitHubEvent
 from storage import async_session, PersistedEvent
 
 
+# this is here for now so that I don't forget how to do it, but checking for & persisting handled events does NOT fall within the
+# main queue worker's set of responsibilities; instead, deployment-specific workers are responsible for these tasks.
 async def persist_handled_event(event: GitHubEvent) -> None:
     async with async_session() as session:
         persisted_event = PersistedEvent(id=event.id)
@@ -38,3 +40,4 @@ async def handle_push_event(push_event: GitHubEvent) -> None:
 
 async def handle_ping_event(ping_event: GitHubEvent) -> None:
     pass
+
