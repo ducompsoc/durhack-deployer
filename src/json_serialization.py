@@ -2,7 +2,9 @@ from copy import copy
 from dataclasses import asdict as dataclass_instance_as_dict, is_dataclass
 import inspect
 import json
-from typing import Any, Type
+from typing import Any, Type, TYPE_CHECKING
+if TYPE_CHECKING:
+    from _typeshed import SupportsWrite, SupportsRead
 
 from data_types import GitHubEvent
 
@@ -48,9 +50,17 @@ def durhack_deployer_decode_object_hook(obj: dict) -> Any:
     return obj
 
 
-def durhack_deployer_json_dumps(obj):
+def durhack_deployer_json_dump(obj: object, fp: SupportsWrite[str]) -> None:
+    return json.dump(obj, fp, cls=DurHackDeployerJsonEncoder)
+
+
+def durhack_deployer_json_load(fp: SupportsRead[str]) -> Any:
+    return json.load(fp, object_hook=durhack_deployer_decode_object_hook)
+
+
+def durhack_deployer_json_dumps(obj: object) -> str:
     return json.dumps(obj, cls=DurHackDeployerJsonEncoder)
 
 
-def durhack_deployer_json_loads(obj):
-    return json.loads(obj, object_hook=durhack_deployer_decode_object_hook)
+def durhack_deployer_json_loads(s: str) -> Any:
+    return json.loads(s, object_hook=durhack_deployer_decode_object_hook)
