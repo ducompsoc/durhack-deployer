@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Never
 
 from pydantic import (
     BaseModel,
@@ -39,8 +39,24 @@ class DurHackDeploymentConfig(BaseDeploymentConfig):
     repository: Literal["ducompsoc/durhack"]
 
 
+class GuildsDeploymentConfig(BaseDeploymentConfig):
+    repository: Literal["ducompsoc/durhack-guilds"]
+
+
+class LiveDeploymentConfig(BaseDeploymentConfig):
+    repository: Literal["ducompsoc/durhack-live"]
+
+
+class JuryDeploymentConfig(BaseDeploymentConfig):
+    repository: Literal["ducompsoc/durhack-jury"]
+
+
 type DeploymentConfig = Annotated[
-    NginxDeploymentConfig | DurHackDeploymentConfig,
+    NginxDeploymentConfig
+    | DurHackDeploymentConfig
+    | GuildsDeploymentConfig
+    | LiveDeploymentConfig
+    | JuryDeploymentConfig,
     Discriminator("repository"),
 ]
 
@@ -55,7 +71,6 @@ class DeployerConfig(BaseModel):
 
 untrusted_config = load_config(Path(project_root_dir, "config"))
 config = DeployerConfig.model_validate(untrusted_config)
-
 
 if __name__ == "__main__":
     print(config.model_dump_json(indent=2))
