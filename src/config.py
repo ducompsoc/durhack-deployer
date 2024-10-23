@@ -57,3 +57,7 @@ class DeployerConfig(BaseModel):
 
 untrusted_config = load_config(Path(project_root_dir, "config"))
 config = DeployerConfig.model_validate(untrusted_config)
+
+
+if __name__ == "__main__":
+    print(config.model_dump_json(indent=2))
