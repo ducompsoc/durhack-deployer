@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import Annotated, Literal, Never
+from typing import Annotated, Literal, Optional
 
 from pydantic import (
     BaseModel,
@@ -33,6 +33,20 @@ class BaseDeploymentConfig(BaseModel, abc.ABC):
 
 class NginxDeploymentConfig(BaseDeploymentConfig):
     repository: Literal["ducompsoc/durhack-nginx"]
+    sites_whitelist: Optional[dict[str, bool]]
+    """Specifies configuration files from the ``production`` folder to respect; all others will be ignored.
+
+    The rationale for this is that the machine being deployed to (i.e. DurHack Scaleway event VPS) may select
+    which sites to respect (i.e. because those sites are hosted year-round, so by a different machine ) and ignore
+    everything else.
+    """
+    sites_blacklist: Optional[dict[str, bool]]
+    """Specifies site filenames from the ``production`` folder to ignore.
+
+    The rationale for this is that the machine being deployed to (i.e. DurHack IONOS year-round VPS) may select which
+    sites to ignore (i.e. because those sites are not hosted year-round, so hosted by a different machine) and deploy
+    everything else.
+    """
 
 
 class DurHackDeploymentConfig(BaseDeploymentConfig):
