@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 from pydantic import (
-    AnyUrl,
     BaseModel,
     HttpUrl,
     PositiveInt,
@@ -51,7 +50,6 @@ class DeployerConfig(BaseModel):
     proxy_fix: ProxyFixConfig
     origin: HttpUrl
     webhook_secret_token: str
-    celery_task_broker_uri: AnyUrl
     deployments: dict[str, DeploymentConfig]
 
 

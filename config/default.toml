@@ -1,7 +1,5 @@
 origin = "http://deploy.durhack-dev.com"
 webhook_secret_token = "not-a-real-secret-token"
-# override this in local.toml: "pyamqp://myuser:mypassword@localhost/myvhost"
-celery_task_broker_uri = "pyamqp://guest@localhost//"
 
 [listen]
 host = "localhost"
