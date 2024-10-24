@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from config import config, DeploymentConfig
 from github_payload_types import PushEvent
@@ -16,9 +16,10 @@ class Deployment:
     slug: str
     config: DeploymentConfig
 
-    @property
-    def queue(self) -> Queue:
-        return Queue(self.slug)
+    queue: Queue = field(init=False)
+
+    def __post_init__(self):
+        self.queue = Queue(self.slug)
 
 
 deployments = {slug: Deployment(slug, config) for slug, config in config.deployments.items()}
