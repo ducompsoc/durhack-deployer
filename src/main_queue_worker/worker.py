@@ -1,14 +1,22 @@
-from typing import override
+import asyncio
 from pathlib import Path
+from time import time_ns
+from typing import override, TextIO
+
+from sqlalchemy import exists
 
 from data_types import GitHubEvent
-from json_serialization import durhack_deployer_json_load
-from queue_worker_base import QueueWorkerBase
+from definitions import project_root_dir
+from deployments import lookup_event_deployment
+from github_payload_types import PushEvent
+from json_serialization import durhack_deployer_json_load, durhack_deployer_json_dump
+from queue_worker_base import QueueWorkerBase, run_worker
 from storage import async_session, PersistedEvent
 
 
 # this is here for now so that I don't forget how to do it, but checking for & persisting handled events does NOT fall within the
-# main queue worker's set of responsibilities; instead, deployment-specific workers are responsible for these tasks.
+# main queue worker's set of responsibilities (except for 'ping' events);
+# instead, deployment-specific workers are responsible for these tasks.
 async def persist_handled_event(event: GitHubEvent) -> None:
     async with async_session() as session:
         persisted_event = PersistedEvent(id=event.id)
@@ -16,40 +24,63 @@ async def persist_handled_event(event: GitHubEvent) -> None:
         await session.commit()
 
 
+async def persisted_event_exists(event_id: str) -> bool:
+    async with async_session() as session:
+        return await session.scalar(
+            exists()
+            .where(PersistedEvent.id == event_id)
+            .select()
+        )
+
+
+queue_directory = Path(project_root_dir, "queues")
+
+
 class MainQueueWorker(QueueWorkerBase):
     @override
     async def process_queue_item(self, queue_item_path: Path) -> None:
-        with open(queue_item_path) as queueItemHandle:
-            queue_item_payload = durhack_deployer_json_load(queueItemHandle)
+        with open(queue_item_path) as queue_item_handle:
+            event = durhack_deployer_json_load(queue_item_handle)
 
+        if not isinstance(event, GitHubEvent):
+            # log a message saying a queue item was invalid
+            return
 
-async def handle_event(event: GitHubEvent) -> None:
-    pass
-    # Check the event ID (`X-GitHub-Delivery` request header) against persistent storage of 'already processed' events
-    # if the event ID is known (i.e. has already been processed), we stop processing the event (as it could be a replay attack)
+        if persisted_event_exists(event.id):
+            # log a message saying we are ignoring an event as it was previously processed
+            return
 
-    # we need to decide what to do based on the event type.
-    # in practise, the webhook should only ever receive two event types:
-    # - `push` (when commits are pushed)
-    # - `ping` (when the webhook is initially connected)
-    # but we shouldn't assume that other event types will never be sent, and act accordingly (e.g. respond 'NOT IMPLEMENTED')
-    if event.type == "ping":
-        await handle_ping_event(event)
-        await persist_handled_event(event)
+        if event.type == "ping":
+            await persist_handled_event(event)
+            return
+
+        if event.type == "push":
+            await handle_push_event(event)
+            return
+
+        # should log a message here r.e. handling not implemented
         return
 
-    if event.type == "push":
-        await handle_push_event(event)
-        await persist_handled_event(event)
+
+async def handle_push_event(event: GitHubEvent) -> None:
+    assert event.type == "push"
+    payload: PushEvent = event.payload
+    deployment = lookup_event_deployment(payload)
+    if deployment is None:
         return
+    # if we find a deployment, add the event to its worker queue
+    deployment_queue_dir = Path(queue_directory, deployment.slug)
+    deployment_queue_dir.mkdir(parents=True, exist_ok=True)
+    event_item_filepath = Path(deployment_queue_dir, f"${time_ns()}.json")
+    with open(event_item_filepath, "x") as event_item_handle:
+        durhack_deployer_json_dump(event, event_item_handle)
 
-    # once the event has been handled, we add the event ID to persistent storage
+
+async def main() -> None:
+    queue_dir = Path(queue_directory, "main")
+    queue_dir.mkdir(parents=True, exist_ok=True)
+    await run_worker(MainQueueWorker, queue_dir)
 
 
-async def handle_push_event(push_event: GitHubEvent) -> None:
-    pass
-
-
-async def handle_ping_event(ping_event: GitHubEvent) -> None:
-    pass
-
+if __name__ == "__main__":
+    asyncio.run(main())
