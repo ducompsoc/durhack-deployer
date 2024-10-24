@@ -5,6 +5,8 @@ from werkzeug.routing import Rule
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import config
+from data_types import GitHubEvent
+from queues import main_queue
 
 from .github_meta import ensure_ip_is_github_hooks_ip
 from .payload_signature_verifier import PayloadSignatureVerifier
@@ -40,13 +42,17 @@ async def github_webhook() -> Response:
     signature_from_requester = request.headers.get("X-Hub-Signature-256")
     signature_verifier.verify(payload_body, signature_from_requester)
 
-    payload = request.get_json()
-
     # Then, add the event to a queue for processing (this ensures we can always send a 2xx response to GitHub in a timely manner)
     # the event metadata needs to include
+    # - the request body (payload)
     # - the `X-GitHub-Event` request header (which contains the event type)
     # - the `X-GitHub-Delivery` request header (which contains a unique ID for the event represented by the payload)
-    # - the request body
+    event = GitHubEvent(
+        request.get_json(),
+        request.headers.get("X-GitHub-Event"),
+        request.headers.get("X-GitHub-Delivery"),
+    )
+    main_queue.push_event(event)
 
     # Finally, respond with a 2xx status code
     return make_response("", 204)
