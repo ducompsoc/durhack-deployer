@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from os import PathLike
 from pathlib import Path
 import signal
-from typing import override
+from typing import override, Type
 
 from watchdog.events import FileClosedEvent
 
@@ -91,15 +91,19 @@ class QueueWorkerBase:
                 await asyncio.wait(self.queue_item_tasks)
 
 
-async def main():
+async def run_worker(worker_factory: Type[QueueWorkerBase], *args, **kwargs) -> None:
     loop = asyncio.get_running_loop()
     interrupted = loop.create_future()
     loop.add_signal_handler(signal.SIGINT, interrupted.set_result, None)
 
-    queue_dir = Path(project_root_dir, "queues", "main-queue")
-    worker = QueueWorkerBase(queue_dir, loop = loop)
+    worker = worker_factory(*args, **kwargs, loop=loop)
     async with worker.run():
         await interrupted
+
+
+async def main() -> None:
+    queue_dir = Path(project_root_dir, "queues", "base")
+    await run_worker(QueueWorkerBase, queue_dir)
 
 
 if __name__ == "__main__":
