@@ -16,10 +16,14 @@ class Deployment:
     slug: str
     config: DeploymentConfig
 
-    queue: Queue = field(init=False)
+    _queue: Queue = field(init=False)
 
-    def __post_init__(self):
-        self.queue = Queue(self.slug)
+    @property
+    def queue(self):
+        if self._queue is not None:
+            return self._queue
+        self._queue = Queue(self.slug)
+        return self._queue
 
 
 deployments = {slug: Deployment(slug, config) for slug, config in config.deployments.items()}
