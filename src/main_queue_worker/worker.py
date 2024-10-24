@@ -1,7 +1,6 @@
 import asyncio
 from pathlib import Path
-from time import time_ns
-from typing import override, TextIO
+from typing import override
 
 from sqlalchemy import exists
 
@@ -9,8 +8,9 @@ from data_types import GitHubEvent
 from definitions import project_root_dir
 from deployments import lookup_event_deployment
 from github_payload_types import PushEvent
-from json_serialization import durhack_deployer_json_load, durhack_deployer_json_dump
+from json_serialization import durhack_deployer_json_load
 from queue_worker_base import QueueWorkerBase, run_worker
+from queues import main_queue
 from storage import async_session, PersistedEvent
 
 
@@ -69,17 +69,11 @@ async def handle_push_event(event: GitHubEvent) -> None:
     if deployment is None:
         return
     # if we find a deployment, add the event to its worker queue
-    deployment_queue_dir = Path(queue_directory, deployment.slug)
-    deployment_queue_dir.mkdir(parents=True, exist_ok=True)
-    event_item_filepath = Path(deployment_queue_dir, f"${time_ns()}.json")
-    with open(event_item_filepath, "x") as event_item_handle:
-        durhack_deployer_json_dump(event, event_item_handle)
+    deployment.queue.push_event(event)
 
 
 async def main() -> None:
-    queue_dir = Path(queue_directory, "main")
-    queue_dir.mkdir(parents=True, exist_ok=True)
-    await run_worker(MainQueueWorker, queue_dir)
+    await run_worker(MainQueueWorker, main_queue)
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from config import config, DeploymentConfig
 from github_payload_types import PushEvent
+from queues import Queue
 
 
 @dataclass(eq=True, frozen=True)
@@ -14,6 +15,10 @@ class DeploymentSpecifier:
 class Deployment:
     slug: str
     config: DeploymentConfig
+
+    @property
+    def queue(self) -> Queue:
+        return Queue(self.slug)
 
 
 deployments = {slug: Deployment(slug, config) for slug, config in config.deployments.items()}
