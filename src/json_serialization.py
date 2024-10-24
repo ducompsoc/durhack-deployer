@@ -50,11 +50,11 @@ def durhack_deployer_decode_object_hook(obj: dict) -> Any:
     return obj
 
 
-def durhack_deployer_json_dump(obj: object, fp: SupportsWrite[str]) -> None:
+def durhack_deployer_json_dump(obj: object, fp: "SupportsWrite[str]") -> None:
     return json.dump(obj, fp, cls=DurHackDeployerJsonEncoder)
 
 
-def durhack_deployer_json_load(fp: SupportsRead[str]) -> Any:
+def durhack_deployer_json_load(fp: "SupportsRead[str]") -> Any:
     return json.load(fp, object_hook=durhack_deployer_decode_object_hook)
 
 
