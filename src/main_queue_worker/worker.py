@@ -46,7 +46,7 @@ class MainQueueWorker(QueueWorkerBase):
             # log a message saying a queue item was invalid
             return
 
-        if persisted_event_exists(event.id):
+        if await persisted_event_exists(event.id):
             # log a message saying we are ignoring an event as it was previously processed
             return
 
