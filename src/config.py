@@ -74,7 +74,8 @@ type DeploymentConfig = Annotated[
     | DurHackDeploymentConfig
     | GuildsDeploymentConfig
     | LiveDeploymentConfig
-    | JuryDeploymentConfig,
+    | JuryDeploymentConfig
+    | DeployerDeploymentConfig,
     Discriminator("repository"),
 ]
 
