@@ -47,10 +47,10 @@ def lookup_deployment_by_spec(spec: DeploymentSpecifier) -> Deployment | None:
 
 
 def lookup_event_deployment(event_payload: PushEvent) -> Deployment | None:
-    base_ref = event_payload["base_ref"]
-    if not base_ref.startswith("refs/heads/"):
+    ref = event_payload["ref"]
+    if not ref.startswith("refs/heads/"):
         return None
-    branch_name = base_ref[11:]
+    branch_name = ref[11:]
 
     spec = DeploymentSpecifier(
         event_payload["repository"]["full_name"],
