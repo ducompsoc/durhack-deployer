@@ -65,6 +65,10 @@ class JuryDeploymentConfig(BaseDeploymentConfig):
     repository: Literal["ducompsoc/durhack-jury"]
 
 
+class DeployerDeploymentConfig(BaseDeploymentConfig):
+    repository: Literal["ducompsoc/durhack-deployer"]
+
+
 type DeploymentConfig = Annotated[
     NginxDeploymentConfig
     | DurHackDeploymentConfig
