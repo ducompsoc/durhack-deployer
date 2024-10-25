@@ -21,7 +21,7 @@ class DurHackDeployerJsonEncoder(json.JSONEncoder):
             raise ValueError("obj is not an instance of a supported dataclass")
 
         serialized = dataclass_instance_as_dict(obj)
-        serialized["__type__"] = dataclass.__name__
+        serialized["__dataclass__"] = dataclass.__name__
         return serialized
 
     def default(self, obj: object) -> Any:
@@ -38,13 +38,13 @@ class DurHackDeployerJsonEncoder(json.JSONEncoder):
 
 
 def durhack_deployer_decode_object_hook(obj: dict) -> Any:
-    if '__type__' in obj:
-        obj_type_name = obj["__type__"]
+    if '__dataclass__' in obj:
+        obj_type_name = obj["__dataclass__"]
         if not obj_type_name in serialize_type_name_to_dataclass_map:
             raise ValueError(f"Cannot deserialize unknown dataclass: '{obj_type_name}'")
         dataclass = serialize_type_name_to_dataclass_map[obj_type_name]
         obj_copy = copy(obj)
-        del obj_copy["__type__"]
+        del obj_copy["__dataclass__"]
         return dataclass(**obj_copy)
 
     return obj
