@@ -5,4 +5,4 @@ SCRIPTS_DIRNAME=$(dirname "$( readlink -f "${BASH_SOURCE[0]:-"$( command -v -- "
 
 source "$SCRIPTS_DIRNAME"/activate-environment.sh
 
-python -m main_queue_worker.app
+python -m "$1"
