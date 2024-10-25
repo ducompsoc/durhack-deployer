@@ -16,7 +16,10 @@ class Deployment:
     slug: str
     config: DeploymentConfig
 
-    _queue: Queue = field(init=False)
+    _queue: Queue | None = field(init=False)
+
+    def __post_init__(self):
+        self._queue = None
 
     @property
     def queue(self):
