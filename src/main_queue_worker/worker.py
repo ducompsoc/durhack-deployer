@@ -66,9 +66,9 @@ async def handle_push_event(event: GitHubEvent) -> None:
     assert event.type == "push"
     payload: PushEvent = event.payload
     deployment = lookup_event_deployment(payload)
-    if deployment is None:
+    if deployment is None or not deployment.config.enabled:
         return
-    # if we find a deployment, add the event to its worker queue
+    # if we find an enabled deployment, add the event to its worker queue
     deployment.queue.push_event(event)
 
 
