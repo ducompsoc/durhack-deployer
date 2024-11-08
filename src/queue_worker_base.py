@@ -8,7 +8,7 @@ from typing import override, Type
 from watchdog.events import FileClosedEvent
 
 from aio_watchdog import AIOWatchdog, AIOEventHandler
-from queues import Queue
+from queues import Queue, base_queue
 
 
 class QueueDirectoryListener(AIOEventHandler):
@@ -92,20 +92,19 @@ class QueueWorkerBase:
                 await asyncio.wait(self.queue_item_tasks)
 
 
-async def run_worker(worker_factory: Type[QueueWorkerBase], queue: Queue, *args, **kwargs) -> None:
+async def run_worker(worker_factory: Type[QueueWorkerBase], *args, **kwargs) -> None:
     loop = asyncio.get_running_loop()
     interrupted = loop.create_future()
     loop.add_signal_handler(signal.SIGINT, interrupted.set_result, None)
 
-    queue.path.mkdir(parents=True, exist_ok=True)
-    worker = worker_factory(queue, *args, **kwargs, loop=loop)
+    worker = worker_factory(*args, **kwargs, loop=loop)
     async with worker.run():
         await interrupted
 
 
 async def main() -> None:
-    queue = Queue("base")
-    await run_worker(QueueWorkerBase, queue)
+    base_queue.path.mkdir(parents=True, exist_ok=True)
+    await run_worker(QueueWorkerBase, base_queue)
 
 
 if __name__ == "__main__":

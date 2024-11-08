@@ -73,6 +73,7 @@ async def handle_push_event(event: GitHubEvent) -> None:
 
 
 async def main() -> None:
+    main_queue.path.mkdir(parents=True, exist_ok=True)
     await run_worker(MainQueueWorker, main_queue)
 
 

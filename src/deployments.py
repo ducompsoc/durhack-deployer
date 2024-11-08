@@ -12,9 +12,9 @@ class DeploymentSpecifier:
 
 
 @dataclass
-class Deployment:
+class Deployment[Config: DeploymentConfig]:
     slug: str
-    config: DeploymentConfig
+    config: Config
 
     _queue: Queue | None = field(init=False)
 
