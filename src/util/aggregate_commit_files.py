@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from functools import reduce
 
-from data_types import GitHubEvent
-from github_payload_types import CommitEntity, PushEvent
-from json_serialization import durhack_deployer_json_load
+from github_payload_types import CommitEntity
 
 
 @dataclass
@@ -82,3 +80,5 @@ def aggregate_commit_files(commits: list[CommitEntity]) -> FileTreeDiff:
     )
     result = reduce(_apply_commit, commits[1:], accumulator)
     return result.freeze()
+
+__all__ = ("configure_console_logging", "FileTreeDiff",)
