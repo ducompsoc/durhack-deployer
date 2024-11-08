@@ -1,6 +1,6 @@
 import abc
 from pathlib import Path
-from typing import Annotated, Literal, Optional, List
+from typing import Annotated, ClassVar, Literal, List
 
 from pydantic import (
     BaseModel,
@@ -48,28 +48,34 @@ type FilterRule = Annotated[
 
 
 class NginxDeploymentConfig(BaseDeploymentConfig):
+    worker_module: ClassVar[str] = "nginx_queue_worker"
     repository: Literal["ducompsoc/durhack-nginx"]
     sites: List[FilterRule]
     """Filter rules for configuration files from the ``production`` directory."""
 
 
 class DurHackDeploymentConfig(BaseDeploymentConfig):
+    worker_module: ClassVar[str] = "durhack_queue_worker"
     repository: Literal["ducompsoc/durhack"]
 
 
 class GuildsDeploymentConfig(BaseDeploymentConfig):
+    worker_module: ClassVar[str] = "guilds_queue_worker"
     repository: Literal["ducompsoc/durhack-guilds"]
 
 
 class LiveDeploymentConfig(BaseDeploymentConfig):
+    worker_module: ClassVar[str] = "live_queue_worker"
     repository: Literal["ducompsoc/durhack-live"]
 
 
 class JuryDeploymentConfig(BaseDeploymentConfig):
+    worker_module: ClassVar[str] = "jury_queue_worker"
     repository: Literal["ducompsoc/durhack-jury"]
 
 
 class DeployerDeploymentConfig(BaseDeploymentConfig):
+    worker_module: ClassVar[str] = "deployer_queue_worker"
     repository: Literal["ducompsoc/durhack-deployer"]
 
 
