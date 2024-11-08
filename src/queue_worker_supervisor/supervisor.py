@@ -4,6 +4,7 @@ import signal
 from typing import TYPE_CHECKING, Type
 if TYPE_CHECKING:
     from asyncio.subprocess import Process
+from logging import Logger, getLogger
 
 from deployments import deployments, Deployment
 
@@ -12,9 +13,12 @@ class QueueWorkerSupervisor:
     def __init__(
         self,
         deployments: dict[str, Deployment],
+        *,
         loop: asyncio.AbstractEventLoop | None = None,
+        logger: Logger | None = None
     ):
         self._loop = loop if loop is not None else asyncio.get_running_loop()
+        self._logger = logger if logger is not None else getLogger(__name__)
         self.deployments = deployments
         self.main_queue_worker_process: "Process" | None = None
         self.deployment_queue_worker_processes: dict[str, "Process"] = dict()
@@ -22,18 +26,18 @@ class QueueWorkerSupervisor:
     async def dispatch_main_queue_worker(self) -> "Process":
         if self.main_queue_worker_process is not None:
             raise Exception("Refusing to dispatch main queue worker as it is (seemingly) already running")
-        print("[main] Dispatching queue worker ...")
+        self._logger.info("[main] Dispatching queue worker ...")
         process = await asyncio.create_subprocess_shell(
             "python -m main_queue_worker"
         )
-        print(f"[main] Dispatched queue worker has PID {process.pid}")
+        self._logger.info(f"[main] Dispatched queue worker has PID {process.pid}")
 
         async def cleanup_on_exit():
             exit_code = await process.wait()
             if self.main_queue_worker_process is not process:
                 return
             self.main_queue_worker_process = None
-            print(f"[main] Queue worker (PID {process.pid}) has exited with status {exit_code}")
+            self._logger.info(f"[main] Queue worker (PID {process.pid}) has exited with status {exit_code}")
         self._loop.create_task(cleanup_on_exit())
 
         self.main_queue_worker_process = process
@@ -48,18 +52,18 @@ class QueueWorkerSupervisor:
         assert self.deployments.get(deployment.slug) is deployment
         if deployment.slug in self.deployment_queue_worker_processes:
             raise Exception(f"Refusing to dispatch queue worker for deployment '{deployment.slug}' as it is (seemingly) already running")
-        print(f"[{deployment.slug}] Dispatching queue worker ...")
+        self._logger.info(f"[{deployment.slug}] Dispatching queue worker ...")
         process = await asyncio.create_subprocess_shell(
             f"python -m '{deployment.config.worker_module}' -d '{deployment.slug}'"
         )
-        print(f"[{deployment.slug}] Dispatched queue worker has PID {process.pid}")
+        self._logger.info(f"[{deployment.slug}] Dispatched queue worker has PID {process.pid}")
 
         async def cleanup_on_exit():
             exit_code = await process.wait()
             if self.deployment_queue_worker_processes.get(deployment.slug) is not process:
                 return
             del self.deployment_queue_worker_processes[deployment.slug]
-            print(f"[{deployment.slug}] Queue worker (PID {process.pid}) has exited with status {exit_code}")
+            self._logger.info(f"[{deployment.slug}] Queue worker (PID {process.pid}) has exited with status {exit_code}")
         self._loop.create_task(cleanup_on_exit())
 
         self.deployment_queue_worker_processes[deployment.slug] = process
@@ -73,9 +77,9 @@ class QueueWorkerSupervisor:
 
     async def wait_for_main_queue_worker_process(self) -> int | None:
         if self.main_queue_worker_process is None:
-            print(f"[main] queue worker is not running, no waiting required")
+            self._logger.info(f"[main] queue worker is not running, no waiting required")
             return None
-        print(f"[main] Waiting for queue worker to exit ...")
+        self._logger.info(f"[main] Waiting for queue worker to exit ...")
         exit_code = await self.main_queue_worker_process.wait()
         return exit_code
 
@@ -88,9 +92,9 @@ class QueueWorkerSupervisor:
         assert self.deployments.get(deployment.slug) is deployment
         process = self.deployment_queue_worker_processes.get(deployment.slug, None)
         if process is None:
-            print(f"[{deployment.slug}] queue worker is not running, no waiting required")
+            self._logger.info(f"[{deployment.slug}] queue worker is not running, no waiting required")
             return
-        print(f"[{deployment.slug}] Waiting for queue worker to exit ...")
+        self._logger.info(f"[{deployment.slug}] Waiting for queue worker to exit ...")
         exit_code = await process.wait()
         return exit_code
 
@@ -107,17 +111,20 @@ class QueueWorkerSupervisor:
                 self.create_deployment_queue_worker_dispatch_task(deployment, task_group)
 
     def interrupt(self) -> None:
+        if self.main_queue_worker_process is None:
+            self._logger.info("[main] Skipping interrupt, process not found")
+
         if self.main_queue_worker_process is not None:
-            print(f"[main] Sending SIGINT")
+            self._logger.info(f"[main] Sending SIGINT")
             self.main_queue_worker_process.send_signal(signal.SIGINT)
 
         for deployment in self.deployments.values():
             process = self.deployment_queue_worker_processes.get(deployment.slug, None)
             if process is None:
-                print(f"[{deployment.slug}] Skipping interrupt, process not found")
+                self._logger.info(f"[{deployment.slug}] Skipping interrupt, process not found")
                 continue
 
-            print(f"[{deployment.slug}] Sending SIGINT")
+            self._logger.info(f"[{deployment.slug}] Sending SIGINT")
             process.send_signal(signal.SIGINT)
 
     async def wait(self) -> None:
