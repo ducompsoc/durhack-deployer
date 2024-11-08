@@ -28,12 +28,15 @@ class QueueWorkerSupervisor:
             raise Exception("Refusing to dispatch main queue worker as it is (seemingly) already running")
         self._logger.info("[main] Dispatching queue worker ...")
         process = await asyncio.create_subprocess_shell(
-            "python -m main_queue_worker"
+            "python -m main_queue_worker",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
         self._logger.info(f"[main] Dispatched queue worker has PID {process.pid}")
 
         async def cleanup_on_exit():
-            exit_code = await process.wait()
+            stdout, stderr = await process.communicate()
+            exit_code = process.returncode
             if self.main_queue_worker_process is not process:
                 return
             self.main_queue_worker_process = None
@@ -54,12 +57,15 @@ class QueueWorkerSupervisor:
             raise Exception(f"Refusing to dispatch queue worker for deployment '{deployment.slug}' as it is (seemingly) already running")
         self._logger.info(f"[{deployment.slug}] Dispatching queue worker ...")
         process = await asyncio.create_subprocess_shell(
-            f"python -m '{deployment.config.worker_module}' -d '{deployment.slug}'"
+            f"python -m '{deployment.config.worker_module}' -d '{deployment.slug}'",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
         self._logger.info(f"[{deployment.slug}] Dispatched queue worker has PID {process.pid}")
 
         async def cleanup_on_exit():
-            exit_code = await process.wait()
+            stdout, stderr = await process.communicate()
+            exit_code = process.returncode
             if self.deployment_queue_worker_processes.get(deployment.slug) is not process:
                 return
             del self.deployment_queue_worker_processes[deployment.slug]
