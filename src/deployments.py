@@ -36,17 +36,11 @@ deployment_by_spec = {
 
 
 def lookup_deployment_by_slug(slug: str) -> Deployment | None:
-    try:
-        return deployments[slug]
-    except KeyError:
-        return None
+    return deployments.get(slug, None)
 
 
 def lookup_deployment_by_spec(spec: DeploymentSpecifier) -> Deployment | None:
-    try:
-        return deployment_by_spec[spec]
-    except KeyError:
-        return None
+    return deployment_by_spec.get(spec, None)
 
 
 def lookup_event_deployment(event_payload: PushEvent) -> Deployment | None:
