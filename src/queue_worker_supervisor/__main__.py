@@ -1,20 +1,17 @@
 import asyncio
 import argparse
 import logging
-import sys
 
 from deployments import deployments
+from util import configure_console_logging
 
 from .supervisor import run_supervisor, QueueWorkerSupervisor
 
 
 logger = logging.getLogger("supervisor")
-logging.basicConfig(
-    stream=sys.stdout,
-    level=logging.INFO,
-    format="{levelname}:{name}:{message}",
-    style="{",
-)
+configure_console_logging(logger)
+logger.setLevel(logging.DEBUG)
+
 
 parser = argparse.ArgumentParser(
     prog="queue-worker-supervisor",

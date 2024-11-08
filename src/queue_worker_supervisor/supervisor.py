@@ -7,6 +7,8 @@ if TYPE_CHECKING:
     from asyncio.subprocess import Process
 from logging import Logger, getLogger
 
+from colorlog.escape_codes import escape_codes
+
 from deployments import deployments, Deployment
 
 
@@ -16,7 +18,7 @@ class SubprocessMessage:
         self.subprocess = subprocess
 
     def __str__(self):
-        return f"[{self.subprocess}] {self.message}"
+        return f"[{escape_codes.get("fg_purple")}{self.subprocess}{escape_codes.get("reset")}] {self.message}"
 
 
 class QueueWorkerSupervisor:
