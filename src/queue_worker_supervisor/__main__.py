@@ -9,6 +9,12 @@ from .supervisor import run_supervisor, QueueWorkerSupervisor
 
 
 logger = logging.getLogger("supervisor")
+logging.basicConfig(
+    stream=sys.stdout,
+    level=logging.INFO,
+    format="{levelname}:{name}:{message}",
+    style="{",
+)
 
 parser = argparse.ArgumentParser(
     prog="queue-worker-supervisor",
@@ -17,7 +23,6 @@ parser = argparse.ArgumentParser(
 
 
 async def main() -> None:
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     parser.parse_args()
     await run_supervisor(QueueWorkerSupervisor, deployments, logger=logger)
 
