@@ -2,8 +2,6 @@ import asyncio
 from pathlib import Path
 from typing import override
 
-from sqlalchemy import exists
-
 from data_types import GitHubEvent
 from definitions import project_root_dir
 from deployments import lookup_event_deployment
@@ -11,27 +9,7 @@ from github_payload_types import PushEvent
 from json_serialization import durhack_deployer_json_load
 from queue_worker_base import QueueWorkerBase, run_worker
 from queues import main_queue
-from storage import async_session, PersistedEvent
-
-
-# this is here for now so that I don't forget how to do it, but checking for & persisting handled events does NOT fall within the
-# main queue worker's set of responsibilities (except for 'ping' events);
-# instead, deployment-specific workers are responsible for these tasks.
-async def persist_handled_event(event: GitHubEvent) -> None:
-    async with async_session() as session:
-        persisted_event = PersistedEvent(id=event.id)
-        session.add(persisted_event)
-        await session.commit()
-
-
-async def persisted_event_exists(event_id: str) -> bool:
-    async with async_session() as session:
-        return await session.scalar(
-            exists()
-            .where(PersistedEvent.id == event_id)
-            .select()
-        )
-
+from storage import persisted_event_exists, persist_handled_event
 
 queue_directory = Path(project_root_dir, "queues")
 
@@ -46,7 +24,7 @@ class MainQueueWorker(QueueWorkerBase):
             # log a message saying a queue item was invalid
             return
 
-        if await persisted_event_exists(event.id):
+        if await persisted_event_exists(event):
             # log a message saying we are ignoring an event as it was previously processed
             return
 
