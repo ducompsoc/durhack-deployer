@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import Callable
 from contextlib import asynccontextmanager
+from logging import Logger, getLogger
 from pathlib import Path
 import signal
 from typing import override, Type
@@ -40,7 +41,9 @@ class QueueWorkerBase:
         self,
         queue: Queue,
         loop: asyncio.AbstractEventLoop | None = None,
+        logger: Logger | None = None,
     ):
+        self._logger = logger if logger is not None else getLogger(__name__)
         self._loop = loop if loop is not None else asyncio.get_running_loop()
         self.queue = queue
         self.queue_directory_listener = QueueDirectoryListener(
