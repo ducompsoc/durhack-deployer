@@ -1,4 +1,3 @@
-import asyncio
 from logging import Logger, getLogger
 from pathlib import Path
 
@@ -19,6 +18,3 @@ async def fetch(path: Path, logger: Logger | None = None) -> None:
         raise Exception(f"`git fetch` exited with status {result.exit_code}; credentials needed for {path.name}: {result.stderr}")
 
     raise Exception(f"`git fetch` exited with status {result.exit_code}; {result.stderr}")
-
-if __name__ == "__main__":
-    asyncio.run(fetch(Path("/", "home", "joeclack", "PycharmProjects", "durhack-deployer")))
