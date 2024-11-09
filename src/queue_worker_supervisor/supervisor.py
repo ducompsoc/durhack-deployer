@@ -64,6 +64,8 @@ class QueueWorkerSupervisor:
                     subprocess="main",
                 ),
             )
+            self._logger.debug((SubprocessMessage(f"stdout: {stdout}", subprocess="main")))
+            self._logger.debug((SubprocessMessage(f"stderr: {stderr}", subprocess="main")))
         self._loop.create_task(cleanup_on_exit())
 
         self.main_queue_worker_process = process
@@ -100,6 +102,8 @@ class QueueWorkerSupervisor:
                     subprocess=deployment.slug,
                 ),
             )
+            self._logger.debug((SubprocessMessage(f"stdout: {stdout}", subprocess=deployment.slug)))
+            self._logger.debug((SubprocessMessage(f"stderr: {stderr}", subprocess=deployment.slug)))
         self._loop.create_task(cleanup_on_exit())
 
         self.deployment_queue_worker_processes[deployment.slug] = process
