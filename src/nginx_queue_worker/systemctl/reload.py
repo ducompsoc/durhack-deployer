@@ -10,7 +10,7 @@ async def reload(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f"systemctl reload {unit_name}"
+        f"sudo systemctl reload {unit_name}"
     )
 
     if result.exit_code == 0:

@@ -13,7 +13,7 @@ async def certonly(
     domain_args = [f"-d '{domain}'" for domain in domains]
 
     result = await async_subprocess.run(
-        f"certbot --non-interactive --nginx --cert-name '{site_name}' {domain_args} --renew-with-new-domains certonly"
+        f"sudo certbot --non-interactive --nginx --cert-name '{site_name}' {domain_args} --renew-with-new-domains certonly"
     )
 
     if result.exit_code == 0:
