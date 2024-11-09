@@ -9,4 +9,4 @@ __all__ = (
 
 from .aggregate_commit_files import *
 from .configure_console_logging import *
-import async_subprocess
+from . import async_subprocess

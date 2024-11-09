@@ -17,8 +17,8 @@ from storage import persisted_event_exists, persist_handled_event
 from util import FileTreeDiff
 from util.aggregate_commit_files import aggregate_commit_files
 
-import certbot
-import systemctl
+from . import certbot
+from . import systemctl
 
 
 class NginxQueueWorker(QueueWorkerBase):
