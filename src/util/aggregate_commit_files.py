@@ -81,4 +81,4 @@ def aggregate_commit_files(commits: list[CommitEntity]) -> FileTreeDiff:
     result = reduce(_apply_commit, commits[1:], accumulator)
     return result.freeze()
 
-__all__ = ("configure_console_logging", "FileTreeDiff",)
+__all__ = ("aggregate_commit_files", "FileTreeDiff",)
