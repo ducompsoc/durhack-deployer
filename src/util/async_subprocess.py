@@ -42,3 +42,6 @@ async def run(cmd: str) -> SubprocessResult:
         stdout.decode("utf8", errors="ignore").rstrip(),
         stderr.decode("utf8", errors="ignore").rstrip(),
     )
+
+
+__all__ = ("run",)

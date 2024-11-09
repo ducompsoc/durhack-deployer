@@ -2,7 +2,7 @@ import asyncio
 from logging import Logger, getLogger
 from pathlib import Path
 
-import async_subprocess
+from util import async_subprocess
 
 
 async def fetch(path: Path, logger: Logger | None = None) -> None:
