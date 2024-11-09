@@ -2,7 +2,7 @@ from pathlib import Path
 
 import crossplane
 
-from util.crossplane_types import CrossplaneParseResult, CrossplaneDirectiveParseResult
+from .crossplane_types import CrossplaneParseResult, CrossplaneDirectiveParseResult
 
 
 def parse_server_names(site_file_path: Path) -> list[str]:
