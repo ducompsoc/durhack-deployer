@@ -35,6 +35,11 @@ class QueueWorkerSupervisor:
         self.main_queue_worker_process: "Process" | None = None
         self.deployment_queue_worker_processes: dict[str, "Process"] = dict()
 
+    @property
+    def has_running_processes(self) -> bool:
+        if self.main_queue_worker_process is not None: return True
+        return bool(self.deployment_queue_worker_processes)
+
     async def dispatch_main_queue_worker(self) -> "Process":
         if self.main_queue_worker_process is not None:
             raise Exception("Refusing to dispatch main queue worker as it is (seemingly) already running")
@@ -173,10 +178,12 @@ class QueueWorkerSupervisor:
             yield None
         finally:
             self._logger.info("Supervisor stop")
-            if not self.deployment_queue_worker_processes:
+            if not self.has_running_processes:
+                self._logger.info("No processes to wait for; goodbye")
                 return
             self.interrupt()
             await self.wait()
+            self._logger.info("goodbye")
 
 
 async def run_supervisor(supervisor_factory: Type[QueueWorkerSupervisor], *args, **kwargs) -> None:
