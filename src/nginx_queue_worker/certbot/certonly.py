@@ -10,7 +10,7 @@ async def certonly(
 ) -> None:
     logger = logger if logger is not None else getLogger(__name__)
 
-    domain_args = [f"-d '{domain}'" for domain in domains]
+    domain_args = " ".join(f"-d '{domain}'" for domain in domains)
 
     result = await async_subprocess.run(
         f"sudo certbot --non-interactive --nginx --cert-name '{site_name}' {domain_args} --renew-with-new-domains certonly"
