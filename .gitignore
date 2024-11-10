@@ -28,6 +28,7 @@
 
 ## Sources
 !/src
+!/tests
 !/scripts
 !/config
 !/alembic
