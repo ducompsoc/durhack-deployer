@@ -88,6 +88,9 @@ class NginxQueueWorker(QueueWorkerBase):
                 continue
             target = Path(self.config.path, path)
             link_name = Path("/", "etc", "nginx", "snippets", target.relative_to(Path(self.config.path, "snippets")))
+            if link_name.exists(follow_symlinks=False):
+                assert link_name.readlink() == target
+                return
             link_name.symlink_to(target)
 
     async def unlink_removed_snippets(self, diff: git.FileTreeDiff) -> None:
@@ -96,7 +99,10 @@ class NginxQueueWorker(QueueWorkerBase):
                 continue
             target = Path(self.config.path, path)
             link_name = Path("/", "etc", "nginx", "snippets", target.relative_to(Path(self.config.path, "snippets")))
-            assert link_name.readlink() == target
+            if not link_name.is_symlink():
+                return
+            if not link_name.readlink() == target:
+                return
             link_name.unlink()
 
     async def acquire_or_renew_certificate(self, site_file_path: Path) -> None:
