@@ -61,7 +61,6 @@ class NginxQueueWorker(QueueWorkerBase):
         assert event.type == "push"
 
         payload: PushEvent = event.payload
-        file_tree_diff = aggregate_commit_files(payload["commits"])
 
         async with self.deploy_lock:
             if await persisted_event_exists(event):
@@ -69,6 +68,7 @@ class NginxQueueWorker(QueueWorkerBase):
                 return
 
             await git.fetch(self.config.path, self._logger)
+            file_tree_diff = await git.diff(self.config.path, "HEAD", payload["head_commit"]["id"])
             await git.checkout(self.config.path, payload["head_commit"]["id"])
             await self.link_added_snippets(file_tree_diff)
             if not self.has_production_changes(file_tree_diff):
