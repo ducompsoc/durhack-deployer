@@ -71,6 +71,7 @@ class NginxQueueWorker(QueueWorkerBase):
             await self.link_added_snippets(file_tree_diff)
             if not self.has_production_changes(file_tree_diff):
                 await self.unlink_removed_snippets(file_tree_diff)
+                await systemctl.reload("nginx")
                 await persist_handled_event(event)
                 return
 
