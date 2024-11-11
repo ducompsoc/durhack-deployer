@@ -59,11 +59,8 @@ class QueueWorkerBase:
         if path.suffix != ".json": return False
         return True
 
-    async def wrap_process_queue_item(self, queue_item_path: Path) -> object:
-        return await self.process_queue_item(queue_item_path)
-
     def enqueue_queue_item_task(self, queue_item_path: Path) -> None:
-        queue_item_task = self.wrap_process_queue_item(queue_item_path)
+        queue_item_task = self._loop.create_task(self.process_queue_item(queue_item_path))
 
         async def cleanup_after_processing():
             try:
