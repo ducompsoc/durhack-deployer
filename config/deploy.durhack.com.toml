@@ -1,4 +1,5 @@
 # deploy.durhack.com is the instance of durhack-deployer running on the persistent VPS
+origin = "https://deploy.durhack.com"
 
 [deployments.nginx]
 repository = "ducompsoc/durhack-nginx"
