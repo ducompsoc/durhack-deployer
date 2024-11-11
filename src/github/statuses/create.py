@@ -29,7 +29,7 @@ class CommitStatus:
 
 
 async def create(
-    repository_full_name: Path,
+    repository_full_name: str,
     commit_hash: str,
     status: CommitStatus,
     logger: Logger | None = None,
