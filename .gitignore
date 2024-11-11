@@ -22,6 +22,7 @@
 ## Tooling config
 !/alembic.ini
 !/.env.celery
+!/uwsgi.ini
 
 ## App configuration templates
 !.env.template
