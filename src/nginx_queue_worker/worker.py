@@ -158,5 +158,8 @@ class NginxQueueWorker(QueueWorkerBase):
 
             target = destination
             link_name = Path("/", "etc", "nginx", "conf.d", target.relative_to(Path(self.config.path, "local-live")))
-            assert link_name.readlink() == target
+            if not link_name.is_symlink():
+                return
+            if not link_name.readlink() == target:
+                return
             link_name.unlink()
