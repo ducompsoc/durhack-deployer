@@ -5,7 +5,7 @@ from itertools import chain
 from pathlib import Path
 from typing import override, ClassVar
 
-from config import NginxDeploymentConfig, IncludeRule
+from config import NginxDeploymentConfig
 from data_types import GitHubEvent
 from deployments import Deployment
 import git
@@ -13,10 +13,8 @@ from filters import Filter
 from github_payload_types import PushEvent
 from json_serialization import durhack_deployer_json_load
 from nginx_queue_worker.parse_server_names import parse_server_names
-from queue_worker_base import QueueWorkerBase, run_worker
+from queue_worker_base import QueueWorkerBase
 from storage import persisted_event_exists, persist_handled_event
-from util import FileTreeDiff
-from util.aggregate_commit_files import aggregate_commit_files
 
 from . import certbot
 from . import systemctl
@@ -30,7 +28,7 @@ class NginxQueueWorker(QueueWorkerBase):
         self.site_filter = Filter(self.config.sites)
 
     @staticmethod
-    def has_production_changes(diff: FileTreeDiff) -> bool:
+    def has_production_changes(diff: git.FileTreeDiff) -> bool:
         for path in chain(diff.added, diff.removed, diff.modified):
             if path.startswith("production/"):
                 return True
@@ -84,7 +82,7 @@ class NginxQueueWorker(QueueWorkerBase):
 
             await persist_handled_event(event)
 
-    async def link_added_snippets(self, diff: FileTreeDiff) -> None:
+    async def link_added_snippets(self, diff: git.FileTreeDiff) -> None:
         for path in diff.added:
             if not path.startswith("snippets/"):
                 continue
@@ -92,7 +90,7 @@ class NginxQueueWorker(QueueWorkerBase):
             link_name = Path("/", "etc", "nginx", "snippets", target.relative_to(Path(self.config.path, "snippets")))
             link_name.symlink_to(target)
 
-    async def unlink_removed_snippets(self, diff: FileTreeDiff) -> None:
+    async def unlink_removed_snippets(self, diff: git.FileTreeDiff) -> None:
         for path in diff.removed:
             if not path.startswith("snippets/"):
                 continue
@@ -106,7 +104,7 @@ class NginxQueueWorker(QueueWorkerBase):
         domain_names = parse_server_names(site_file_path)
         await certbot.certonly(site_name, domain_names, logger=self._logger)
 
-    async def acquire_or_renew_certificates(self, diff: FileTreeDiff) -> None:
+    async def acquire_or_renew_certificates(self, diff: git.FileTreeDiff) -> None:
         for path in chain(diff.added, diff.modified):
             if not path.startswith("production/"):
                 continue
@@ -120,7 +118,7 @@ class NginxQueueWorker(QueueWorkerBase):
                 continue
             await self.acquire_or_renew_certificate(source)
 
-    async def deploy_added_and_modified_files(self, diff: FileTreeDiff) -> None:
+    async def deploy_added_and_modified_files(self, diff: git.FileTreeDiff) -> None:
         for path in chain(diff.added, diff.modified):
             if not path.startswith("production/"):
                 continue
@@ -141,7 +139,7 @@ class NginxQueueWorker(QueueWorkerBase):
                 continue
             link_name.symlink_to(target)
 
-    async def deploy_removed_files(self, diff: FileTreeDiff) -> None:
+    async def deploy_removed_files(self, diff: git.FileTreeDiff) -> None:
         for path in diff.removed:
             if not path.startswith("production/"):
                 continue
