@@ -25,7 +25,7 @@ class PersistedEvent(Base):
         return f"Event(id={self.id!r})"
 
 
-engine = create_async_engine(environment["DATABASE_URL"], echo=True)
+engine = create_async_engine(environment["DATABASE_URL"], echo=False)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 async def persist_handled_event(event: GitHubEvent) -> None:
