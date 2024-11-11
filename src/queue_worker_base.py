@@ -48,7 +48,7 @@ class QueueWorkerBase:
         self.queue = queue
         self.queue_directory_listener = QueueDirectoryListener(
             self.is_queue_item,
-            self.create_queue_item_task,
+            self.enqueue_queue_item_task,
             loop=loop,
         )
         self.queue_item_tasks: set[asyncio.Task[None]] = set()
@@ -59,12 +59,19 @@ class QueueWorkerBase:
         if path.suffix != ".json": return False
         return True
 
-    def create_queue_item_task(self, queue_item_path: Path) -> None:
-        process_queue_item_task = self._loop.create_task(self.process_queue_item(queue_item_path))
+    async def wrap_process_queue_item(self, queue_item_path: Path) -> object:
+        return await self.process_queue_item(queue_item_path)
+
+    def enqueue_queue_item_task(self, queue_item_path: Path) -> None:
+        queue_item_task = self.wrap_process_queue_item(queue_item_path)
 
         async def cleanup_after_processing():
-            await process_queue_item_task
-            queue_item_path.unlink(missing_ok=True)
+            try:
+                await queue_item_task
+                queue_item_path.unlink(missing_ok=True)
+            except Exception as error:
+                self._logger.error(f"Task failed for queue item {queue_item_path.stem}, error follows")
+                self._logger.error(error, exc_info=True)
             self.queue_item_tasks.remove(asyncio.current_task())
 
         cleanup_after_processing_task = self._loop.create_task(cleanup_after_processing())
@@ -79,7 +86,7 @@ class QueueWorkerBase:
 
         ordered_candidates = sorted(filtered_candidates, key=filename)
         for candidate in ordered_candidates:
-            self.create_queue_item_task(candidate)
+            self.enqueue_queue_item_task(candidate)
 
     async def process_queue_item(self, queue_item_path: Path) -> None:
         pass
