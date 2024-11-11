@@ -13,16 +13,16 @@ from filters import Filter
 from github_payload_types import PushEvent
 from json_serialization import durhack_deployer_json_load
 from nginx_queue_worker.parse_server_names import parse_server_names
-from queue_worker_base import QueueWorkerBase
+from github_repository_queue_worker import GitHubRepositoryQueueWorker
 from storage import persisted_event_exists, persist_handled_event
 
 from . import certbot
 from . import systemctl
 
 
-class NginxQueueWorker(QueueWorkerBase):
+class NginxQueueWorker(GitHubRepositoryQueueWorker):
     def __init__(self, deployment: Deployment[NginxDeploymentConfig], *args, **kwargs):
-        super().__init__(deployment.queue, *args, **kwargs)
+        super().__init__(deployment.queue, deployment.config.repository, *args, **kwargs)
         self.deploy_lock = asyncio.Lock()
         self.config = deployment.config
         self.site_filter = Filter(self.config.sites)
@@ -51,13 +51,8 @@ class NginxQueueWorker(QueueWorkerBase):
         return match.group("site_name")
 
     @override
-    async def process_queue_item(self, queue_item_path: Path) -> None:
-        with open(queue_item_path) as queue_item_handle:
-            event = durhack_deployer_json_load(queue_item_handle)
-
-        assert isinstance(event, GitHubEvent)
+    async def process_github_event(self, event: GitHubEvent) -> None:
         assert event.type == "push"
-
         payload: PushEvent = event.payload
 
         async with self.deploy_lock:
