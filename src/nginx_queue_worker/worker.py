@@ -9,6 +9,7 @@ from config import NginxDeploymentConfig, IncludeRule
 from data_types import GitHubEvent
 from deployments import Deployment
 import git
+from filters import Filter
 from github_payload_types import PushEvent
 from json_serialization import durhack_deployer_json_load
 from nginx_queue_worker.parse_server_names import parse_server_names
@@ -26,6 +27,7 @@ class NginxQueueWorker(QueueWorkerBase):
         super().__init__(deployment.queue, *args, **kwargs)
         self.deploy_lock = asyncio.Lock()
         self.config = deployment.config
+        self.site_filter = Filter(self.config.sites)
 
     @staticmethod
     def has_production_changes(diff: FileTreeDiff) -> bool:
@@ -43,10 +45,11 @@ class NginxQueueWorker(QueueWorkerBase):
         return cls.site_file_name_pattern.match(name) is not None
 
     @classmethod
-    def get_site_file_site_name(cls, path: Path) -> str:
+    def get_site_file_site_name(cls, path: Path) -> str | None:
         name = path.name
         match = cls.site_file_name_pattern.match(name)
-        assert match is not None
+        if match is None:
+            return None
         return match.group("site_name")
 
     @override
@@ -110,7 +113,10 @@ class NginxQueueWorker(QueueWorkerBase):
             if path.endswith(".disabled"):
                 continue
             source = Path(self.config.path, path)
-            if not self.is_site_file(source):
+            site_name = self.get_site_file_site_name(source)
+            if site_name is None:
+                continue
+            if not self.site_filter.matches(site_name):
                 continue
             await self.acquire_or_renew_certificate(source)
 
@@ -118,7 +124,12 @@ class NginxQueueWorker(QueueWorkerBase):
         for path in chain(diff.added, diff.modified):
             if not path.startswith("production/"):
                 continue
+
             source = Path(self.config.path, path)
+            site_name = self.get_site_file_site_name(source)
+            if site_name is not None and not self.site_filter.matches(site_name):
+                continue
+
             destination = Path(self.config.path, "local-live", source.relative_to(Path(self.config.path, "production")))
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, destination)

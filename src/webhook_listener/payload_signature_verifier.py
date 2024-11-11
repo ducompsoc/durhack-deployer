@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import unittest
 
+from flask import make_response
 from werkzeug.exceptions import Forbidden, BadRequest, HTTPException
 
 
@@ -20,11 +21,19 @@ class PayloadSignatureVerifier:
             signature_header: header received from GitHub (x-hub-signature-256)
         """
         if signature_header is None:
-            raise BadRequest(description="X-Hub-Signature-256 header is missing")
+            raise BadRequest(response=make_response({
+                "status": 400,
+                "message": "Bad Request",
+                "description": "X-Hub-Signature-256 header is missing",
+            }, 400))
         hash_object = hmac.new(self.encoded_secret_token, msg=payload_body, digestmod=hashlib.sha256)
         expected_signature = "sha256=" + hash_object.hexdigest()
         if not hmac.compare_digest(expected_signature, signature_header):
-            raise Forbidden(description="X-Hub-Signature-256 header didn't match expected signature")
+            raise Forbidden(response=make_response({
+                "status": 403,
+                "message": "Forbidden",
+                "description": "X-Hub-Signature-256 header didn't match expected signature",
+            }, 403))
 
 
 class VerifySignatureTest(unittest.TestCase):
@@ -38,7 +47,7 @@ class VerifySignatureTest(unittest.TestCase):
             )
         except HTTPException:
             self.fail("verify_signature should not raise any errors using the GitHub-provided example")
-    
+
     def test_missing_signature_header(self):
         verifier = PayloadSignatureVerifier("It's a Secret to Everybody")
         self.assertRaises(

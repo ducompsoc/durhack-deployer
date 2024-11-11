@@ -3,6 +3,7 @@ from typing import TypedDict
 
 from aiohttp import ClientResponse
 from aiohttp_client_cache import CachedSession, CacheBackend
+from flask import make_response
 from werkzeug.exceptions import Forbidden
 
 cache = CacheBackend(cache_control=True)
@@ -17,7 +18,7 @@ type GitHubMetaResponseBody = TypedDict("GitHubMetaResponse", {
 async def fetch_github_meta() -> ClientResponse:
     async with CachedSession(cache=cache) as session:
         async with session.get(
-            "https://api.github.com/meta", 
+            "https://api.github.com/meta",
             headers={
                 "Accept": "application/vnd.github+json",
                 "X-GitHub-Api-Version": "2022-11-28"
@@ -48,4 +49,9 @@ async def ensure_ip_is_github_hooks_ip(ip: IPv4Address | IPv6Address) -> None:
     network = await get_github_hooks_network()
     if any(map(lambda x: ip in x, network)):
         return
-    raise Forbidden()
+
+    raise Forbidden(response=make_response({
+        "status": 403,
+        "message": "Forbidden",
+        "description": f"Remote IP address {ip} is not recognised as a GitHub 'hooks' IP address",
+    }, 403))
