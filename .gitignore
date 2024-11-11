@@ -34,4 +34,7 @@
 !/config
 !/alembic
 
+## Python caches
+**/__pycache__
+
 # Explicit exceptions/ignores
