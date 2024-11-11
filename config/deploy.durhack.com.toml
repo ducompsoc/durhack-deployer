@@ -9,4 +9,10 @@ path = "/home/durhack/projects/durhack-nginx"
 
 [[deployments.nginx.sites]]
 rule = "include"
-select = ["admin.auth.durhack.com", "api.durhack.com", "api.durhack-staging.com", "auth.durhack.com", "deploy.durhack.com"]
+select = [
+    "admin.auth.durhack.com",
+    "api.durhack.com",
+    "api.durhack-staging.com",
+    "auth.durhack.com",
+    "deploy.durhack.com",
+]
