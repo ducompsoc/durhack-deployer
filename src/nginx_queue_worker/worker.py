@@ -5,7 +5,7 @@ from itertools import chain
 from pathlib import Path
 from typing import override, ClassVar
 
-from config import NginxDeploymentConfig, IncludeRule
+from config import NginxDeploymentConfig
 from data_types import GitHubEvent
 from deployments import Deployment
 import git
@@ -13,24 +13,22 @@ from filters import Filter
 from github_payload_types import PushEvent
 from json_serialization import durhack_deployer_json_load
 from nginx_queue_worker.parse_server_names import parse_server_names
-from queue_worker_base import QueueWorkerBase, run_worker
+from github_repository_queue_worker import GitHubRepositoryQueueWorker
 from storage import persisted_event_exists, persist_handled_event
-from util import FileTreeDiff
-from util.aggregate_commit_files import aggregate_commit_files
 
 from . import certbot
 from . import systemctl
 
 
-class NginxQueueWorker(QueueWorkerBase):
+class NginxQueueWorker(GitHubRepositoryQueueWorker):
     def __init__(self, deployment: Deployment[NginxDeploymentConfig], *args, **kwargs):
-        super().__init__(deployment.queue, *args, **kwargs)
+        super().__init__(deployment.queue, deployment.config.repository, *args, **kwargs)
         self.deploy_lock = asyncio.Lock()
         self.config = deployment.config
         self.site_filter = Filter(self.config.sites)
 
     @staticmethod
-    def has_production_changes(diff: FileTreeDiff) -> bool:
+    def has_production_changes(diff: git.FileTreeDiff) -> bool:
         for path in chain(diff.added, diff.removed, diff.modified):
             if path.startswith("production/"):
                 return True
@@ -53,15 +51,9 @@ class NginxQueueWorker(QueueWorkerBase):
         return match.group("site_name")
 
     @override
-    async def process_queue_item(self, queue_item_path: Path) -> None:
-        with open(queue_item_path) as queue_item_handle:
-            event = durhack_deployer_json_load(queue_item_handle)
-
-        assert isinstance(event, GitHubEvent)
+    async def process_github_event(self, event: GitHubEvent) -> None:
         assert event.type == "push"
-
         payload: PushEvent = event.payload
-        file_tree_diff = aggregate_commit_files(payload["commits"])
 
         async with self.deploy_lock:
             if await persisted_event_exists(event):
@@ -69,10 +61,12 @@ class NginxQueueWorker(QueueWorkerBase):
                 return
 
             await git.fetch(self.config.path, self._logger)
+            file_tree_diff = await git.diff(self.config.path, "HEAD", payload["head_commit"]["id"])
             await git.checkout(self.config.path, payload["head_commit"]["id"])
             await self.link_added_snippets(file_tree_diff)
             if not self.has_production_changes(file_tree_diff):
                 await self.unlink_removed_snippets(file_tree_diff)
+                await systemctl.reload("nginx")
                 await persist_handled_event(event)
                 return
 
@@ -84,21 +78,27 @@ class NginxQueueWorker(QueueWorkerBase):
 
             await persist_handled_event(event)
 
-    async def link_added_snippets(self, diff: FileTreeDiff) -> None:
+    async def link_added_snippets(self, diff: git.FileTreeDiff) -> None:
         for path in diff.added:
             if not path.startswith("snippets/"):
                 continue
             target = Path(self.config.path, path)
             link_name = Path("/", "etc", "nginx", "snippets", target.relative_to(Path(self.config.path, "snippets")))
+            if link_name.exists(follow_symlinks=False):
+                assert link_name.readlink() == target
+                return
             link_name.symlink_to(target)
 
-    async def unlink_removed_snippets(self, diff: FileTreeDiff) -> None:
+    async def unlink_removed_snippets(self, diff: git.FileTreeDiff) -> None:
         for path in diff.removed:
             if not path.startswith("snippets/"):
                 continue
             target = Path(self.config.path, path)
             link_name = Path("/", "etc", "nginx", "snippets", target.relative_to(Path(self.config.path, "snippets")))
-            assert link_name.readlink() == target
+            if not link_name.is_symlink():
+                return
+            if not link_name.readlink() == target:
+                return
             link_name.unlink()
 
     async def acquire_or_renew_certificate(self, site_file_path: Path) -> None:
@@ -106,7 +106,7 @@ class NginxQueueWorker(QueueWorkerBase):
         domain_names = parse_server_names(site_file_path)
         await certbot.certonly(site_name, domain_names, logger=self._logger)
 
-    async def acquire_or_renew_certificates(self, diff: FileTreeDiff) -> None:
+    async def acquire_or_renew_certificates(self, diff: git.FileTreeDiff) -> None:
         for path in chain(diff.added, diff.modified):
             if not path.startswith("production/"):
                 continue
@@ -120,7 +120,7 @@ class NginxQueueWorker(QueueWorkerBase):
                 continue
             await self.acquire_or_renew_certificate(source)
 
-    async def deploy_added_and_modified_files(self, diff: FileTreeDiff) -> None:
+    async def deploy_added_and_modified_files(self, diff: git.FileTreeDiff) -> None:
         for path in chain(diff.added, diff.modified):
             if not path.startswith("production/"):
                 continue
@@ -141,7 +141,7 @@ class NginxQueueWorker(QueueWorkerBase):
                 continue
             link_name.symlink_to(target)
 
-    async def deploy_removed_files(self, diff: FileTreeDiff) -> None:
+    async def deploy_removed_files(self, diff: git.FileTreeDiff) -> None:
         for path in diff.removed:
             if not path.startswith("production/"):
                 continue
@@ -154,5 +154,8 @@ class NginxQueueWorker(QueueWorkerBase):
 
             target = destination
             link_name = Path("/", "etc", "nginx", "conf.d", target.relative_to(Path(self.config.path, "local-live")))
-            assert link_name.readlink() == target
+            if not link_name.is_symlink():
+                return
+            if not link_name.readlink() == target:
+                return
             link_name.unlink()

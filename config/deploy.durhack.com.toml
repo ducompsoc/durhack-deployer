@@ -1,0 +1,18 @@
+# deploy.durhack.com is the instance of durhack-deployer running on the persistent VPS
+origin = "https://deploy.durhack.com"
+
+[deployments.nginx]
+repository = "ducompsoc/durhack-nginx"
+enabled = true
+branch = "main"
+path = "/home/durhack/projects/durhack-nginx"
+
+[[deployments.nginx.sites]]
+rule = "include"
+select = [
+    "admin.auth.durhack.com",
+    "api.durhack.com",
+    "api.durhack-staging.com",
+    "auth.durhack.com",
+    "deploy.durhack.com",
+]

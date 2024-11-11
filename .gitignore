@@ -22,6 +22,8 @@
 ## Tooling config
 !/alembic.ini
 !/.env.celery
+!/uwsgi.ini
+!/ecosystem.config.cjs
 
 ## App configuration templates
 !.env.template
@@ -32,5 +34,8 @@
 !/scripts
 !/config
 !/alembic
+
+## Python caches
+**/__pycache__
 
 # Explicit exceptions/ignores

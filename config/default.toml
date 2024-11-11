@@ -5,7 +5,7 @@ webhook_secret_token = "not-a-real-secret-token"
 host = "localhost"
 port = 3400
 
-[proxy_fix]  # in development, behind both nginx and https://smee.io
+[proxy_fix]  # in development, behind both nginx and https://smee.io or similar
 x_for = 2
 x_proto = 2
 

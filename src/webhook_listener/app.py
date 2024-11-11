@@ -1,4 +1,5 @@
 from ipaddress import ip_address
+from os import getenv
 
 from flask import Flask, Response, request, make_response
 from werkzeug.routing import Rule
@@ -24,7 +25,8 @@ def root_route() -> Response:
     return make_response({
         "status": 200,
         "message": "OK",
-        "service": "durhack-nginx-deployer",
+        "service": "durhack-deployer",
+        "instance": getenv("PYTHON_APP_INSTANCE"),
     })
 
 
