@@ -2,7 +2,10 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 import signal
+from pathlib import Path
 from typing import TYPE_CHECKING, Type, Optional
+
+from definitions import project_root_dir
 
 if TYPE_CHECKING:
     from asyncio.subprocess import Process
@@ -46,7 +49,7 @@ class QueueWorkerSupervisor:
             raise Exception("Refusing to dispatch main queue worker as it is (seemingly) already running")
         self._logger.debug(SubprocessMessage("Dispatching queue worker ...", subprocess="main"))
         process = await asyncio.create_subprocess_shell(
-            "python -m main_queue_worker",
+            f"{Path(project_root_dir, ".venv.", "bin", "python")} -m main_queue_worker",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -199,6 +202,7 @@ async def run_supervisor(supervisor_factory: Type[QueueWorkerSupervisor], *args,
     interrupted = loop.create_future()
     loop.add_signal_handler(signal.SIGINT, interrupted.set_result, None)
     loop.add_signal_handler(signal.SIGTERM, interrupted.set_result, None)
+    signal.signal(signal.SIGINT, lambda a,b: print("foobarbaz"))
 
     supervisor = supervisor_factory(*args, **kwargs, loop=loop)
     async with supervisor.run():
