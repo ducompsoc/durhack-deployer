@@ -23,7 +23,7 @@ async def read_config(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f"node --eval \"import({ecosystem_file}).then((mod) => console.log(JSON.stringify(mod)))\"",
+        f". $HOME/.nvm/nvm.sh && node --eval \"import({ecosystem_file}).then((mod) => console.log(JSON.stringify(mod)))\"",
         env,
     )
 
