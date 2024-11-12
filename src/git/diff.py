@@ -5,6 +5,8 @@ from typing import Literal, Callable
 
 from util import async_subprocess
 
+from ._set_env import set_env
+
 # https://git-scm.com/docs/git-diff#Documentation/git-diff.txt---diff-filterACDMRTUXB82308203
 type DiffStatusLetter = Literal[
     "A",  # Added
@@ -57,7 +59,8 @@ async def diff(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f"git -C {path} diff --no-renames --diff-filter=ADMT --name-status '{from_ref}' '{to_ref}'"
+        f"git -C {path} diff --no-renames --diff-filter=ADMT --name-status '{from_ref}' '{to_ref}'",
+        set_env(),
     )
 
     if result.exit_code != 0:

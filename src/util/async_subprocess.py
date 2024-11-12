@@ -1,6 +1,5 @@
 import asyncio
 from dataclasses import dataclass
-import functools
 import os
 
 
@@ -11,20 +10,9 @@ class SubprocessResult:
     stderr: str
 
 
-@functools.cache
-def set_env() -> dict:
-    """
-    GIT_TERMINAL_PROMPT=0 disallows spurious Git https password prompts
-    https://github.blog/2015-02-06-git-2-3-has-been-released/#the-credential-subsystem-is-now-friendlier-to-scripting
-    """
-
-    env = os.environ.copy()
-    env["GIT_TERMINAL_PROMPT"] = "0"
-    return env
-
-
-async def run(cmd: str) -> SubprocessResult:
-    env = set_env()
+async def run(cmd: str, env: dict[str, str] | None = None) -> SubprocessResult:
+    if env is None:
+        env = os.environ.copy()
 
     proc = await asyncio.create_subprocess_shell(
         cmd,
