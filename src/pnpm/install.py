@@ -9,7 +9,7 @@ async def install(project_path: Path, filter_selector: str | None = None, logger
     filter_option = "" if filter_selector is None else f"--filter '{filter_selector}'"
 
     result = await async_subprocess.run(
-        f"pnpm -C '{project_path}' install {filter_option}",
+        f"pnpm -C '{project_path}' {filter_option} install",
     )
 
     if result.exit_code <= 0:
