@@ -198,6 +198,7 @@ async def run_supervisor(supervisor_factory: Type[QueueWorkerSupervisor], *args,
     loop = asyncio.get_running_loop()
     interrupted = loop.create_future()
     loop.add_signal_handler(signal.SIGINT, interrupted.set_result, None)
+    loop.add_signal_handler(signal.SIGTERM, interrupted.set_result, None)
 
     supervisor = supervisor_factory(*args, **kwargs, loop=loop)
     async with supervisor.run():
