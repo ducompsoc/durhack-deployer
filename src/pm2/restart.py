@@ -15,7 +15,7 @@ async def restart(instance_name: str, ecosystem_file: Path, logger: Logger | Non
         env,
     )
 
-    if result.exit_code == 0:
+    if result.exit_code <= 0:
         return
 
-    raise Exception(f"`pm2 restart '{ecosystem_file}'` exited with status {result.exit_code}; {result.stdout}; {result.stderr}")
+    raise Exception(f"`pm2 restart '{ecosystem_file}'` exited with status {result.exit_code}; {result.stderr}")
