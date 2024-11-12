@@ -4,6 +4,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from config import config
 from util import async_subprocess
 
 
@@ -23,7 +24,7 @@ async def read_config(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f". $HOME/.nvm/nvm.sh && node --eval \"import({ecosystem_file}).then((mod) => console.log(JSON.stringify(mod)))\"",
+        f"{config.node_interpreter} --eval \"import({ecosystem_file}).then((mod) => console.log(JSON.stringify(mod)))\"",
         env,
     )
 
@@ -34,9 +35,9 @@ async def read_config(
     if not "default" in module:
         raise Exception(f"{ecosystem_file} is missing default export")
 
-    raw_config = module["default"]
-    if not isinstance(raw_config, dict):
+    raw_ecosystem = module["default"]
+    if not isinstance(raw_ecosystem, dict):
         raise Exception(f"{ecosystem_file}'s default export is not a record-like object")
 
-    config = PM2Ecosystem.model_validate(raw_config)
-    return config
+    ecosystem = PM2Ecosystem.model_validate(raw_ecosystem)
+    return ecosystem
