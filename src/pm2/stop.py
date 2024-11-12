@@ -1,7 +1,7 @@
 from logging import Logger, getLogger
-from pathlib import Path
 
 from util import async_subprocess
+
 
 async def stop(
     target: str,
