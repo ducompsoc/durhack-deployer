@@ -77,8 +77,8 @@ class JuryDeploymentConfig(BaseDeploymentConfig):
 class DeployerDeploymentConfig(BaseDeploymentConfig):
     worker_module: ClassVar[str] = "deployer_queue_worker"
     repository: Literal["ducompsoc/durhack-deployer"]
+    systemd_unit_name: str
     uwsgi_config_path: Path
-    instance_name: str
 
 
 type DeploymentConfig = Annotated[

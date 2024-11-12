@@ -1,13 +1,12 @@
 import asyncio
-from pathlib import Path
 from typing import override
 
-import pm2
+import git
+import systemctl
 import uwsgi
 from config import DeployerDeploymentConfig
 from data_types import GitHubEvent
 from deployments import Deployment
-import git
 from github_payload_types import PushEvent
 from github_repository_queue_worker import GitHubRepositoryQueueWorker
 from storage import persisted_event_exists, persist_handled_event
@@ -34,6 +33,6 @@ class DeployerQueueWorker(GitHubRepositoryQueueWorker):
             await git.checkout(self.config.path, payload["head_commit"]["id"], self._logger)
 
             await uwsgi.reload(self.config.uwsgi_config_path, self._logger)
-            await pm2.restart(self.config.instance_name, Path(self.config.path, "ecosystem.config.cjs"), self._logger)
+            await systemctl.restart(self.config.systemd_unit_name, block=False, logger=self._logger)
 
             await persist_handled_event(event)

@@ -6,7 +6,7 @@ repository = "ducompsoc/durhack-deployer"
 enabled = true
 branch = "main"
 path = "/var/www/deploy.durhack.com"
-instance_name = "deploy.durhack.com"
+systemd_unit_name = "durhack-deployer-queue-workers"
 uwsgi_config_path = "/etc/uwsgi/vassals/deploy.durhack.com.ini"
 
 [deployments.nginx]
