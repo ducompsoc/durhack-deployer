@@ -4,11 +4,15 @@ Description=DurHack Deployer Queue Workers
 [Service]
 User=durhack
 Group=durhack
-ExecStart=/var/www/deploy.durhack.com/scripts/python-module.sh queue_worker_supervisor
+WorkingDirectory=/var/www/deploy.durhack.com
+ExecStart=/var/www/deploy.durhack.com/.venv/bin/python -m queue_worker_supervisor
+Environment="PYTHONPATH=/var/www/deploy.durhack.com/src"
+Environment="PYTHON_ENV=production"
+Environment="PYTHON_APP_INSTANCE=deploy.durhack.com"
 KillSignal=SIGINT
 KillMode=mixed
 TimeoutStopSec=60
-Type=simple
+Type=exec
 
 [Install]
 WantedBy=multi-user.target
