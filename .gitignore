@@ -23,7 +23,7 @@
 !/alembic.ini
 !/.env.celery
 !/uwsgi.ini
-!/ecosystem.config.cjs
+!/queue-workers.service
 
 ## App configuration templates
 !.env.template

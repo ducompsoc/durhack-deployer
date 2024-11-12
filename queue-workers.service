@@ -1,0 +1,14 @@
+[Unit]
+Description=DurHack Deployer Queue Workers
+
+[Service]
+User=durhack
+Group=durhack
+ExecStart=/var/www/deploy.durhack.com/scripts/python-module.sh queue_worker_supervisor
+KillSignal=SIGINT
+KillMode=mixed
+TimeoutStopSec=60
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
