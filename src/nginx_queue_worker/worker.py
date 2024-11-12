@@ -5,19 +5,18 @@ from itertools import chain
 from pathlib import Path
 from typing import override, ClassVar
 
+import git
+import systemctl
 from config import NginxDeploymentConfig
 from data_types import GitHubEvent
 from deployments import Deployment
-import git
 from filters import Filter
 from github_payload_types import PushEvent
-from json_serialization import durhack_deployer_json_load
 from nginx_queue_worker.parse_server_names import parse_server_names
 from github_repository_queue_worker import GitHubRepositoryQueueWorker
 from storage import persisted_event_exists, persist_handled_event
 
 from . import certbot
-from . import systemctl
 
 
 class NginxQueueWorker(GitHubRepositoryQueueWorker):
