@@ -24,7 +24,7 @@ async def read_config(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f"{config.node_interpreter} --eval \"import({ecosystem_file}).then((mod) => console.log(JSON.stringify(mod)))\"",
+        f"{config.node_interpreter} --eval \"import('{ecosystem_file}').then((mod) => console.log(JSON.stringify(mod)))\"",
         env,
     )
 
