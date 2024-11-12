@@ -57,21 +57,25 @@ class NginxDeploymentConfig(BaseDeploymentConfig):
 class DurHackDeploymentConfig(BaseDeploymentConfig):
     worker_module: ClassVar[str] = "durhack_queue_worker"
     repository: Literal["ducompsoc/durhack"]
+    instance_name: str
 
 
 class GuildsDeploymentConfig(BaseDeploymentConfig):
     worker_module: ClassVar[str] = "guilds_queue_worker"
     repository: Literal["ducompsoc/durhack-guilds"]
+    instance_name: str
 
 
 class LiveDeploymentConfig(BaseDeploymentConfig):
     worker_module: ClassVar[str] = "live_queue_worker"
     repository: Literal["ducompsoc/durhack-live"]
+    instance_name: str
 
 
 class JuryDeploymentConfig(BaseDeploymentConfig):
     worker_module: ClassVar[str] = "jury_queue_worker"
     repository: Literal["ducompsoc/durhack-jury"]
+    instance_name: str
 
 
 class DeployerDeploymentConfig(BaseDeploymentConfig):
