@@ -48,8 +48,8 @@ class QueueWorkerSupervisor:
         if self.main_queue_worker_process is not None:
             raise Exception("Refusing to dispatch main queue worker as it is (seemingly) already running")
         self._logger.debug(SubprocessMessage("Dispatching queue worker ...", subprocess="main"))
-        process = await asyncio.create_subprocess_shell(
-            f"{Path(project_root_dir, ".venv", "bin", "python")} -m main_queue_worker",
+        process = await asyncio.create_subprocess_exec(
+            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", "main_queue_worker",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -88,8 +88,8 @@ class QueueWorkerSupervisor:
         if deployment.slug in self.deployment_queue_worker_processes:
             raise Exception(f"Refusing to dispatch queue worker for deployment '{deployment.slug}' as it is (seemingly) already running")
         self._logger.debug(SubprocessMessage("Dispatching queue worker ...", subprocess=deployment.slug))
-        process = await asyncio.create_subprocess_shell(
-            f"{Path(project_root_dir, ".venv", "bin", "python")} -m '{deployment.config.worker_module}' -d '{deployment.slug}'",
+        process = await asyncio.create_subprocess_exec(
+            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", deployment.config.worker_module, "-d", deployment.slug,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -162,8 +162,8 @@ class QueueWorkerSupervisor:
             self._logger.debug(SubprocessMessage("Skipping interrupt, process not found", subprocess="main"))
 
         if self.main_queue_worker_process is not None:
-            self._logger.debug(SubprocessMessage("Sending SIGINT", subprocess="main"))
-            self.main_queue_worker_process.send_signal(signal.SIGINT)
+            self._logger.debug(SubprocessMessage("Sending SIGTERM", subprocess="main"))
+            self.main_queue_worker_process.send_signal(signal.SIGTERM)
 
         for deployment in self.deployments.values():
             process = self.deployment_queue_worker_processes.get(deployment.slug, None)
@@ -171,8 +171,8 @@ class QueueWorkerSupervisor:
                 self._logger.debug(SubprocessMessage("Skipping interrupt, process not found", subprocess=deployment.slug))
                 continue
 
-            self._logger.debug(SubprocessMessage("Sending SIGINT", subprocess=deployment.slug))
-            process.send_signal(signal.SIGINT)
+            self._logger.debug(SubprocessMessage("Sending SIGTERM", subprocess=deployment.slug))
+            process.send_signal(signal.SIGTERM)
 
     async def wait(self) -> None:
         async with asyncio.TaskGroup() as task_group:
