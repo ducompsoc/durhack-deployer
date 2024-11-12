@@ -76,8 +76,11 @@ class QueueWorkerSupervisor:
             return task_group.create_task(self.dispatch_main_queue_worker())
         return self._loop.create_task(self.dispatch_main_queue_worker())
 
-    async def dispatch_deployment_queue_worker(self, deployment: Deployment) -> "Process":
+    async def dispatch_deployment_queue_worker(self, deployment: Deployment) -> "Process" | None:
         assert self.deployments.get(deployment.slug) is deployment
+        if not deployment.config.enabled:
+            self._logger.info(SubprocessMessage("Skipping queue worker dispatch as deployment is disabled", subprocess=deployment.slug))
+            return None
         if deployment.slug in self.deployment_queue_worker_processes:
             raise Exception(f"Refusing to dispatch queue worker for deployment '{deployment.slug}' as it is (seemingly) already running")
         self._logger.debug(SubprocessMessage("Dispatching queue worker ...", subprocess=deployment.slug))
@@ -109,7 +112,7 @@ class QueueWorkerSupervisor:
         self.deployment_queue_worker_processes[deployment.slug] = process
         return process
 
-    def create_deployment_queue_worker_dispatch_task(self, deployment: Deployment, task_group: asyncio.TaskGroup | None = None) -> asyncio.Task["Process"]:
+    def create_deployment_queue_worker_dispatch_task(self, deployment: Deployment, task_group: asyncio.TaskGroup | None = None) -> asyncio.Task["Process" | None]:
         assert self.deployments.get(deployment.slug) is deployment
         if task_group is not None:
             return task_group.create_task(self.dispatch_deployment_queue_worker(deployment))
