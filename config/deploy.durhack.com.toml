@@ -1,6 +1,13 @@
 # deploy.durhack.com is the instance of durhack-deployer running on the persistent VPS
 origin = "https://deploy.durhack.com"
 
+[deployments.durhack-api]
+repository = "ducompsoc/durhack"
+enabled = true
+branch = "main"
+path = "/var/www/api.durhack.com"
+instance_name = "api.durhack.com"
+
 [deployments.deployer]
 repository = "ducompsoc/durhack-deployer"
 enabled = true
