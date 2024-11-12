@@ -2,7 +2,8 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 import signal
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Type, Optional
+
 if TYPE_CHECKING:
     from asyncio.subprocess import Process
 from logging import Logger, getLogger
@@ -32,7 +33,7 @@ class QueueWorkerSupervisor:
         self._loop = loop if loop is not None else asyncio.get_running_loop()
         self._logger = logger if logger is not None else getLogger(__name__)
         self.deployments = deployments
-        self.main_queue_worker_process: "Process" | None = None
+        self.main_queue_worker_process: Optional["Process"] = None
         self.deployment_queue_worker_processes: dict[str, "Process"] = dict()
 
     @property
@@ -76,7 +77,7 @@ class QueueWorkerSupervisor:
             return task_group.create_task(self.dispatch_main_queue_worker())
         return self._loop.create_task(self.dispatch_main_queue_worker())
 
-    async def dispatch_deployment_queue_worker(self, deployment: Deployment) -> "Process" | None:
+    async def dispatch_deployment_queue_worker(self, deployment: Deployment) -> Optional["Process"]:
         assert self.deployments.get(deployment.slug) is deployment
         if not deployment.config.enabled:
             self._logger.info(SubprocessMessage("Skipping queue worker dispatch as deployment is disabled", subprocess=deployment.slug))
@@ -112,7 +113,7 @@ class QueueWorkerSupervisor:
         self.deployment_queue_worker_processes[deployment.slug] = process
         return process
 
-    def create_deployment_queue_worker_dispatch_task(self, deployment: Deployment, task_group: asyncio.TaskGroup | None = None) -> asyncio.Task["Process" | None]:
+    def create_deployment_queue_worker_dispatch_task(self, deployment: Deployment, task_group: asyncio.TaskGroup | None = None) -> asyncio.Task[Optional["Process"]]:
         assert self.deployments.get(deployment.slug) is deployment
         if task_group is not None:
             return task_group.create_task(self.dispatch_deployment_queue_worker(deployment))
