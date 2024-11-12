@@ -1,6 +1,14 @@
 # deploy.durhack.com is the instance of durhack-deployer running on the persistent VPS
 origin = "https://deploy.durhack.com"
 
+[deployments.deployer]
+repository = "ducompsoc/durhack-deployer"
+enabled = true
+branch = "main"
+path = "/var/www/deploy.durhack.com"
+instance_name = "deploy.durhack.com"
+uwsgi_config_path = "/etc/uwsgi/vassals/deploy.durhack.com.ini"
+
 [deployments.nginx]
 repository = "ducompsoc/durhack-nginx"
 enabled = true
