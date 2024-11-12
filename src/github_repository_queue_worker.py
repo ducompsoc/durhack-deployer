@@ -33,7 +33,7 @@ class GitHubRepositoryQueueWorker(QueueWorkerBase):
         try:
             await self.process_github_event(event)
         except:
-            status.state = "failed"
+            status.state = "failure"
             await github.statuses.create(self.repository_full_name, head_commit_ref, status)
             raise
 
