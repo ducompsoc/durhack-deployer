@@ -102,7 +102,7 @@ class DeployerConfig(BaseModel):
     origin: HttpUrl
     webhook_secret_token: str
     deployments: dict[str, DeploymentConfig]
-    node_interpreter: Path
+    executable_search_paths: list[str]
 
 
 untrusted_config = load_config(Path(project_root_dir, "config"))
