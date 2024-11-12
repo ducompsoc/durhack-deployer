@@ -202,7 +202,6 @@ async def run_supervisor(supervisor_factory: Type[QueueWorkerSupervisor], *args,
     interrupted = loop.create_future()
     loop.add_signal_handler(signal.SIGINT, interrupted.set_result, None)
     loop.add_signal_handler(signal.SIGTERM, interrupted.set_result, None)
-    signal.signal(signal.SIGINT, lambda a,b: print("foobarbaz"))
 
     supervisor = supervisor_factory(*args, **kwargs, loop=loop)
     async with supervisor.run():
