@@ -34,6 +34,6 @@ class DeployerQueueWorker(GitHubRepositoryQueueWorker):
             await git.checkout(self.config.path, payload["head_commit"]["id"], self._logger)
 
             await uwsgi.reload(self.config.uwsgi_config_path, self._logger)
-            await pm2.reload(self.config.instance_name, Path(self.config.path, "ecosystem.config.cjs"), self._logger)
+            await pm2.restart(self.config.instance_name, Path(self.config.path, "ecosystem.config.cjs"), self._logger)
 
             await persist_handled_event(event)
