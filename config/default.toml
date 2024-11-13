@@ -1,5 +1,6 @@
 origin = "http://deploy.durhack-dev.com"
 webhook_secret_token = "not-a-real-secret-token"
+executable_search_paths = []
 
 [listen]
 host = "localhost"
