@@ -1,19 +1,25 @@
+import asyncio
 from os import getenv
 from pathlib import Path
 from typing import override
 
+import git
 import github
 from data_types import GitHubEvent
+from deployments import Deployment
+from git import FileTreeDiff
 from github_payload_types import PushEvent
 from json_serialization import durhack_deployer_json_load
 from queue_worker_base import QueueWorkerBase
-from queues import Queue
+from storage import persisted_event_exists, persist_handled_event
 
 
 class GitHubRepositoryQueueWorker(QueueWorkerBase):
-    def __init__(self, queue: Queue, repository_full_name: str, *args, **kwargs):
-        super().__init__(queue, *args, **kwargs)
-        self.repository_full_name = repository_full_name
+    def __init__(self, deployment: Deployment, *args, **kwargs):
+        super().__init__(deployment.queue, *args, **kwargs)
+        self.config = deployment.config
+        self.repository_full_name = deployment.config.repository
+        self.deploy_lock = asyncio.Lock()
 
     @override
     async def process_queue_item(self, queue_item_path: Path) -> None:
@@ -31,8 +37,15 @@ class GitHubRepositoryQueueWorker(QueueWorkerBase):
         )
         await github.statuses.create(self.repository_full_name, head_commit_ref, status)
         try:
-            await self.process_github_event(event)
-        except:
+            async with self.deploy_lock:
+                if await persisted_event_exists(event):
+                    self._logger.warn(f"Ignoring received event {event.id} as it's a duplicate (an event with its ID has already been processed)")
+                    return
+                await git.fetch(self.config.path, self._logger)
+                file_tree_diff = await git.diff(self.config.path, "HEAD", payload["head_commit"]["id"])
+                await self.on_push(payload, file_tree_diff)
+                await persist_handled_event(event)
+        except Exception:
             status.state = "failure"
             await github.statuses.create(self.repository_full_name, head_commit_ref, status)
             raise
@@ -40,5 +53,5 @@ class GitHubRepositoryQueueWorker(QueueWorkerBase):
         status.state = "success"
         await github.statuses.create(self.repository_full_name, head_commit_ref, status)
 
-    async def process_github_event(self, event: GitHubEvent) -> None:
+    async def on_push(self, payload: PushEvent, diff: FileTreeDiff) -> None:
         pass

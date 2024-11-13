@@ -1,4 +1,3 @@
-import asyncio
 import re
 import shutil
 from itertools import chain
@@ -8,22 +7,18 @@ from typing import override, ClassVar
 import git
 import systemctl
 from config import NginxDeploymentConfig
-from data_types import GitHubEvent
 from deployments import Deployment
 from filters import Filter
+from git import FileTreeDiff
 from github_payload_types import PushEvent
-from nginx_queue_worker.parse_server_names import parse_server_names
 from github_repository_queue_worker import GitHubRepositoryQueueWorker
-from storage import persisted_event_exists, persist_handled_event
-
+from nginx_queue_worker.parse_server_names import parse_server_names
 from . import certbot
 
 
 class NginxQueueWorker(GitHubRepositoryQueueWorker):
     def __init__(self, deployment: Deployment[NginxDeploymentConfig], *args, **kwargs):
-        super().__init__(deployment.queue, deployment.config.repository, *args, **kwargs)
-        self.deploy_lock = asyncio.Lock()
-        self.config = deployment.config
+        super().__init__(deployment, *args, **kwargs)
         self.site_filter = Filter(self.config.sites)
 
     @staticmethod
@@ -50,32 +45,19 @@ class NginxQueueWorker(GitHubRepositoryQueueWorker):
         return match.group("site_name")
 
     @override
-    async def process_github_event(self, event: GitHubEvent) -> None:
-        assert event.type == "push"
-        payload: PushEvent = event.payload
-
-        async with self.deploy_lock:
-            if await persisted_event_exists(event):
-                # log a message saying we are ignoring an event as it was previously processed
-                return
-
-            await git.fetch(self.config.path, self._logger)
-            file_tree_diff = await git.diff(self.config.path, "HEAD", payload["head_commit"]["id"])
-            await git.checkout(self.config.path, payload["head_commit"]["id"])
-            await self.link_added_snippets(file_tree_diff)
-            if not self.has_production_changes(file_tree_diff):
-                await self.unlink_removed_snippets(file_tree_diff)
-                await systemctl.reload("nginx")
-                await persist_handled_event(event)
-                return
-
-            await self.acquire_or_renew_certificates(file_tree_diff)
-            await self.deploy_added_and_modified_files(file_tree_diff)
-            await self.unlink_removed_snippets(file_tree_diff)
-            await self.deploy_removed_files(file_tree_diff)
+    async def on_push(self, payload: PushEvent, diff: FileTreeDiff) -> None:
+        await git.checkout(self.config.path, payload["head_commit"]["id"])
+        await self.link_added_snippets(diff)
+        if not self.has_production_changes(diff):
+            await self.unlink_removed_snippets(diff)
             await systemctl.reload("nginx")
+            return
 
-            await persist_handled_event(event)
+        await self.acquire_or_renew_certificates(diff)
+        await self.deploy_added_and_modified_files(diff)
+        await self.unlink_removed_snippets(diff)
+        await self.deploy_removed_files(diff)
+        await systemctl.reload("nginx")
 
     async def link_added_snippets(self, diff: git.FileTreeDiff) -> None:
         for path in diff.added:
