@@ -30,28 +30,29 @@ class GitHubRepositoryQueueWorker(QueueWorkerBase):
         assert event.type == "push"
         payload: PushEvent = event.payload
 
-        head_commit_ref = payload["head_commit"]["id"]
-        status = github.statuses.CommitStatus(
-            f"continuous-integration/{getenv("PYTHON_APP_INSTANCE")}",
-            state="pending",
-        )
-        await github.statuses.create(self.repository_full_name, head_commit_ref, status)
-        try:
-            async with self.deploy_lock:
-                if await persisted_event_exists(event):
-                    self._logger.warn(f"Ignoring received event {event.id} as it's a duplicate (an event with its ID has already been processed)")
-                    return
+        async with self.deploy_lock:
+            if await persisted_event_exists(event):
+                self._logger.warn(f"Ignoring received event {event.id} as it's a duplicate (an event with its ID has already been processed)")
+                return
+
+            head_commit_ref = payload["head_commit"]["id"]
+            status = github.statuses.CommitStatus(
+                f"continuous-integration/{getenv("PYTHON_APP_INSTANCE")}",
+                state="pending",
+            )
+            await github.statuses.create(self.repository_full_name, head_commit_ref, status)
+            try:
                 await git.fetch(self.config.path, self._logger)
                 file_tree_diff = await git.diff(self.config.path, "HEAD", payload["head_commit"]["id"])
                 await self.on_push(payload, file_tree_diff)
                 await persist_handled_event(event)
-        except Exception:
-            status.state = "failure"
-            await github.statuses.create(self.repository_full_name, head_commit_ref, status)
-            raise
+            except Exception:
+                status.state = "failure"
+                await github.statuses.create(self.repository_full_name, head_commit_ref, status)
+                raise
 
-        status.state = "success"
-        await github.statuses.create(self.repository_full_name, head_commit_ref, status)
+            status.state = "success"
+            await github.statuses.create(self.repository_full_name, head_commit_ref, status)
 
     async def on_push(self, payload: PushEvent, diff: FileTreeDiff) -> None:
         pass
