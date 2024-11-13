@@ -59,7 +59,7 @@ async def diff(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f"git -C {path} diff --no-renames --diff-filter=ADMT --name-status '{from_ref}' '{to_ref}'",
+        f"git -C {path} -P diff --no-renames --diff-filter=ADMT --name-status '{from_ref}' '{to_ref}'",
         set_env(),
     )
 
