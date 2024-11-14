@@ -3,13 +3,15 @@ import signal
 
 
 def create_interrupt_future(
-    loop: asyncio.AbstractEventLoop,
+    loop: asyncio.AbstractEventLoop | None = None,
     signals: list[signal.Signals] | None = None,
 ) -> asyncio.Future[None]:
-    interrupted = loop.create_future()
-
+    if loop is None:
+        loop = asyncio.get_running_loop()
     if signals is None:
         signals = [signal.SIGINT, signal.SIGTERM]
+
+    interrupted = loop.create_future()
 
     def on_interrupt(signal_index: int):
         if interrupted.done():
