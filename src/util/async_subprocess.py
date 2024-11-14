@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 import os
 from itertools import chain
+from pathlib import Path
 
 from config import config
 
@@ -20,7 +21,11 @@ def extend_path(env: dict[str, str]) -> None:
     env["PATH"] = ":".join(chain((path,), config.executable_search_paths))
 
 
-async def run(cmd: str, env: dict[str, str] | None = None) -> SubprocessResult:
+async def run(
+    cmd: str,
+    env: dict[str, str] | None = None,
+    cwd: Path | None = None,
+) -> SubprocessResult:
     if env is None:
         env = os.environ.copy()
     extend_path(env)
@@ -30,6 +35,7 @@ async def run(cmd: str, env: dict[str, str] | None = None) -> SubprocessResult:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
         env=env,
+        cwd=cwd,
     )
     stdout, stderr = await proc.communicate()
 
