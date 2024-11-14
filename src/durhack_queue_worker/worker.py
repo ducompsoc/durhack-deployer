@@ -8,7 +8,6 @@ import pm2
 import pnpm
 from config import DurHackDeploymentConfig
 from deployments import Deployment
-from git import FileTreeDiff
 from github_payload_types import PushEvent
 from github_repository_queue_worker import GitHubRepositoryQueueWorker
 
@@ -18,14 +17,14 @@ class DurHackQueueWorker(GitHubRepositoryQueueWorker):
         super().__init__(deployment.queue, deployment.config.repository, *args, **kwargs)
 
     @override
-    async def on_push(self, payload: PushEvent, diff: FileTreeDiff) -> None:
+    async def on_push(self, payload: PushEvent) -> None:
         pm2_env = os.environ.copy()
         pm2_env["INSTANCE_NAME"] = self.config.instance_name
 
         pm2_ecosystem_file = Path(self.config.path, "ecosystem.config.cjs")
         previous_config = await pm2.read_config(pm2_ecosystem_file, env=pm2_env)
 
-        await git.checkout(self.config.path, payload["head_commit"]["id"], self._logger)
+        await self.checkout(payload["head_commit"]["id"])
 
         await pnpm.install(self.config.path, "{server}...")
         await pnpm.exec(self.config.path, "prisma migrate deploy", "{server}")

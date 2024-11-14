@@ -45,8 +45,8 @@ class NginxQueueWorker(GitHubRepositoryQueueWorker):
         return match.group("site_name")
 
     @override
-    async def on_push(self, payload: PushEvent, diff: FileTreeDiff) -> None:
-        await git.checkout(self.config.path, payload["head_commit"]["id"])
+    async def on_push(self, payload: PushEvent) -> None:
+        diff = await self.checkout(payload["head_commit"]["id"])
         await self.link_added_snippets(diff)
         if not self.has_production_changes(diff):
             await self.unlink_removed_snippets(diff)

@@ -42,9 +42,7 @@ class GitHubRepositoryQueueWorker(QueueWorkerBase):
             )
             await github.statuses.create(self.repository_full_name, head_commit_ref, status)
             try:
-                await git.fetch(self.config.path, self._logger)
-                file_tree_diff = await git.diff(self.config.path, "HEAD", payload["head_commit"]["id"])
-                await self.on_push(payload, file_tree_diff)
+                await self.on_push(payload)
                 await persist_handled_event(event)
             except Exception:
                 status.state = "failure"
@@ -54,5 +52,12 @@ class GitHubRepositoryQueueWorker(QueueWorkerBase):
             status.state = "success"
             await github.statuses.create(self.repository_full_name, head_commit_ref, status)
 
-    async def on_push(self, payload: PushEvent, diff: FileTreeDiff) -> None:
+    async def on_push(self, payload: PushEvent) -> None:
         pass
+
+    async def checkout(self, ref: str) -> FileTreeDiff:
+        await git.fetch(self.config.path, self._logger)
+        file_tree_diff = await git.diff(self.config.path, "HEAD", ref)
+        await git.checkout(self.config.path, ref, self._logger)
+        return file_tree_diff
+
