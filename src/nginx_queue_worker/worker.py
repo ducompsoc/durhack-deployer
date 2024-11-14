@@ -47,6 +47,14 @@ class NginxQueueWorker(GitHubRepositoryQueueWorker):
     @override
     async def on_push(self, payload: PushEvent) -> None:
         diff = await self.checkout(payload["head_commit"]["id"])
+        await self.deploy(diff)
+
+    async def on_init(self) -> None:
+        empty_tree_ref = await git.hash_object(self.config.path, Path("/dev/null"), object_type="tree", logger=self._logger)
+        diff = await git.diff(self.config.path, empty_tree_ref, "HEAD", logger=self._logger)
+        await self.deploy(diff)
+
+    async def deploy(self, diff: FileTreeDiff) -> None:
         await self.link_added_snippets(diff)
         if not self.has_production_changes(diff):
             await self.unlink_removed_snippets(diff)
