@@ -12,6 +12,17 @@ parser = argparse.ArgumentParser(
     description="Handles queued 'push' events from various DurHack repositories by piping them to the appropriate worker queue(s).",
 )
 
+parser.add_argument(
+    "-s",
+    "--supervised",
+    dest="supervised",
+    action="store_true",
+)
+
+
+class MainArgNamespace(argparse.Namespace):
+    supervised: bool
+
 
 async def main() -> None:
     parser.parse_args()
