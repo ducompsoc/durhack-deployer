@@ -33,7 +33,7 @@ class DurHackQueueWorker(GitHubRepositoryQueueWorker):
 
         async with asyncio.TaskGroup() as task_group:
             for app in previous_config.apps:
-                task_group.create_task(pm2.stop(app.name))
+                task_group.create_task(pm2.delete(app.name))
 
         await pm2.restart(str(pm2_ecosystem_file), env=pm2_env)
         await pm2.save()
