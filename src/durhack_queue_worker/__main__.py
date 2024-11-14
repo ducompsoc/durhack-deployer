@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 from argparse import ArgumentTypeError
+from typing import Awaitable, Callable, Self
 
 from config import DurHackDeploymentConfig
 from deployments import lookup_deployment_by_slug, Deployment
@@ -12,6 +13,7 @@ parser = argparse.ArgumentParser(
     prog="durhack-queue-worker",
     description="Handles queued 'push' events from the ducompsoc/durhack repository.",
 )
+
 
 def lookup_durhack_deployment_by_slug(slug: str) -> Deployment[DurHackDeploymentConfig]:
     deployment = lookup_deployment_by_slug(slug)
@@ -31,16 +33,36 @@ parser.add_argument(
     metavar="slug",
     type=lookup_durhack_deployment_by_slug,
 )
+subparsers = parser.add_subparsers(required=False)
+
+run_parser = subparsers.add_parser("run")
+
+deploy_parser = subparsers.add_parser("deploy")
 
 
-class DeployerArgNamespace(argparse.Namespace):
+class DurHackArgNamespace(argparse.Namespace):
     deployment: Deployment[DurHackDeploymentConfig]
+    main: Callable[[Self], Awaitable[None]]
+
+
+async def run(args: DurHackArgNamespace) -> None:
+    args.deployment.queue.path.mkdir(parents=True, exist_ok=True)
+    await run_worker(DurHackQueueWorker, args.deployment)
+
+
+async def deploy(args: DurHackArgNamespace) -> None:
+    worker = DurHackQueueWorker(args.deployment)
+    await worker.on_init()
+
+
+parser.set_defaults(main=run)
+run_parser.set_defaults(main=run)
+deploy_parser.set_defaults(main=deploy)
 
 
 async def main() -> None:
-    args = parser.parse_args(None, DeployerArgNamespace())
-    args.deployment.queue.path.mkdir(parents=True, exist_ok=True)
-    await run_worker(DurHackQueueWorker, args.deployment)
+    args = parser.parse_args(None, DurHackArgNamespace())
+    await args.main(args)
 
 
 if __name__ == '__main__':
