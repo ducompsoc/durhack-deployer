@@ -8,7 +8,7 @@ create-migration = "alembic revision"
 migrate = "alembic upgrade head"
 gosmee-dev = "gosmee client https://hook.pipelinesascode.com/ThqAwpBYXGkT http://deploy.durhack-dev.com/github-webhook"  # https://github.com/chmouel/gosmee/#install
 webhook-dev = "./scripts/python-module.sh webhook_listener"
-main-worker-dev = "./scripts/python-module.sh main_queue_worker"
+worker-dev = "./scripts/python-module.sh queue_worker_supervisor"
 
 [packages]
 flask = { extras = ["async"], version = ">=3.0.3, ==3.*" }  # analogous-ish to Express; a framework for defining HTTP request handlers with middleware
