@@ -11,7 +11,8 @@ from deployments import Deployment
 from filters import Filter
 from github_payload_types import PushEvent
 from github_repository_queue_worker import GitHubRepositoryQueueWorker
-from nginx_queue_worker.parse_server_names import parse_server_names
+
+from .parse_server_names import parse_server_names
 
 
 class NginxQueueWorker(GitHubRepositoryQueueWorker):
