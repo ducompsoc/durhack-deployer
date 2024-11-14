@@ -1,6 +1,5 @@
 from typing import override
 
-import git
 import systemctl
 import uwsgi
 from config import DeployerDeploymentConfig
@@ -11,7 +10,7 @@ from github_repository_queue_worker import GitHubRepositoryQueueWorker
 
 class DeployerQueueWorker(GitHubRepositoryQueueWorker):
     def __init__(self, deployment: Deployment[DeployerDeploymentConfig], *args, **kwargs):
-        super().__init__(deployment.queue, deployment.config.repository, *args, **kwargs)
+        super().__init__(deployment, *args, **kwargs)
 
     @override
     async def on_push(self, payload: PushEvent) -> None:
