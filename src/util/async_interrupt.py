@@ -18,6 +18,8 @@ def create_interrupt_future(
             return
         interrupted.set_result(None)
 
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
     for signal_index in signals:
         loop.add_signal_handler(signal_index, on_interrupt, signal_index)
     return interrupted
