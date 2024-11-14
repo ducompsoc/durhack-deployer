@@ -4,44 +4,20 @@ from argparse import ArgumentTypeError
 from typing import Awaitable, Callable, Self
 
 from config import DurHackDeploymentConfig
-from deployments import lookup_deployment_by_slug, Deployment
 from queue_worker_base import run_worker
+from queue_workers.deployment_worker_arg_parser import make_deployment_worker_argument_parser, DeploymentWorkerArgNamespace
+
 from .worker import DurHackQueueWorker
 
-
-parser = argparse.ArgumentParser(
-    prog="durhack-queue-worker",
+parser = make_deployment_worker_argument_parser(
+    prog_name="durhack-queue-worker",
     description="Handles queued 'push' events from the ducompsoc/durhack repository.",
+    deployment_config_type=DurHackDeploymentConfig,
+    repository_full_name="ducompsoc/durhack",
 )
 
 
-def lookup_durhack_deployment_by_slug(slug: str) -> Deployment[DurHackDeploymentConfig]:
-    deployment = lookup_deployment_by_slug(slug)
-    if deployment is None:
-        raise ArgumentTypeError(f"Deployment '{slug}' could not be found") from KeyError
-    if not isinstance(deployment.config, DurHackDeploymentConfig):
-        raise ArgumentTypeError(f"Deployment '{slug}' is for {deployment.config.repository}, expected ducompsoc/durhack") from ValueError
-    return deployment
-
-
-parser.add_argument(
-    "-d",
-    "--deployment",
-    "--deployment-slug",
-    required=True,
-    dest="deployment",
-    metavar="slug",
-    type=lookup_durhack_deployment_by_slug,
-)
-subparsers = parser.add_subparsers(required=False)
-
-run_parser = subparsers.add_parser("run")
-
-deploy_parser = subparsers.add_parser("deploy")
-
-
-class DurHackArgNamespace(argparse.Namespace):
-    deployment: Deployment[DurHackDeploymentConfig]
+class DurHackArgNamespace(DeploymentWorkerArgNamespace[DurHackDeploymentConfig]):
     main: Callable[[Self], Awaitable[None]]
 
 
@@ -55,13 +31,13 @@ async def deploy(args: DurHackArgNamespace) -> None:
     await worker.on_init()
 
 
-parser.set_defaults(main=run)
-run_parser.set_defaults(main=run)
-deploy_parser.set_defaults(main=deploy)
+parser.top_level_parser.set_defaults(main=run)
+parser.run_parser.set_defaults(main=run)
+parser.deploy_parser.set_defaults(main=deploy)
 
 
 async def main() -> None:
-    args = parser.parse_args(None, DurHackArgNamespace())
+    args = parser.top_level_parser.parse_args(None, DurHackArgNamespace())
     await args.main(args)
 
 
