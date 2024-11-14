@@ -35,13 +35,13 @@ class DurHackQueueWorker(GitHubRepositoryQueueWorker):
         if previous_config is not None:
             await self.delete_apps(previous_config.apps)
 
-        await pm2.restart(str(self.pm2_ecosystem_file), env=pm2_env)
+        await pm2.restart(str(self.pm2_ecosystem_file), env=pm2_env, cwd=self.config.path)
         await pm2.save()
 
     async def on_init(self) -> None:
         await self.install_and_build()
         pm2_env = self.get_pm2_env()
-        await pm2.restart(str(self.pm2_ecosystem_file), env=pm2_env)
+        await pm2.restart(str(self.pm2_ecosystem_file), env=pm2_env, cwd=self.config.path)
         await pm2.save()
 
     async def delete_apps(self, apps: list[PM2App]):
@@ -54,3 +54,6 @@ class DurHackQueueWorker(GitHubRepositoryQueueWorker):
         await pnpm.exec(self.config.path, "prisma migrate deploy", "{server}")
         await pnpm.run(self.config.path, "generate", "{server}...")
         await pnpm.run(self.config.path, "build", "{server}...")
+
+    async def start_process(self) -> None:
+
