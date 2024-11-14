@@ -26,7 +26,7 @@ from watchdog.events import (
 )
 
 """
-The contents fo this file are loosely based upon hachiko, Copyright (c) 2023 John Biesnecker
+The contents of this file are loosely based upon hachiko, Copyright (c) 2023 John Biesnecker
 https://github.com/biesnecker/hachiko/blob/ad1ca33beaa705ffcf0972877e17f6155b33b963/hachiko/hachiko.py
 John Biesnecker licenses hachiko to DU Computing Society under the terms of the MIT license.
 DU Computing Society licenses this file to you under the terms of the LGPL-3.0-or-later license.
