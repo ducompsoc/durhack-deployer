@@ -6,7 +6,6 @@ def create_interrupt_future(loop: asyncio.AbstractEventLoop) -> asyncio.Future[N
     interrupted = loop.create_future()
 
     def on_interrupt(signal_index: int):
-        print(f"received signal {signal_index}")
         if interrupted.done():
             return
         interrupted.set_result(None)
