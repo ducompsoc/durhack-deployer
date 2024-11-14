@@ -4,16 +4,14 @@ from itertools import chain
 from pathlib import Path
 from typing import override, ClassVar
 
-import git
-import systemctl
+from shell import certbot, git, systemctl
+from shell.git import FileTreeDiff
 from config import NginxDeploymentConfig
 from deployments import Deployment
 from filters import Filter
-from git import FileTreeDiff
 from github_payload_types import PushEvent
 from github_repository_queue_worker import GitHubRepositoryQueueWorker
 from nginx_queue_worker.parse_server_names import parse_server_names
-from . import certbot
 
 
 class NginxQueueWorker(GitHubRepositoryQueueWorker):

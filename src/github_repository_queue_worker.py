@@ -3,11 +3,10 @@ from os import getenv
 from pathlib import Path
 from typing import override
 
-import git
-import github
+from shell import git, github
 from data_types import GitHubEvent
 from deployments import Deployment
-from git import FileTreeDiff
+from shell.git import FileTreeDiff
 from github_payload_types import PushEvent
 from json_serialization import durhack_deployer_json_load
 from queue_worker_base import QueueWorkerBase

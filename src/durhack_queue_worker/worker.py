@@ -3,9 +3,8 @@ import os
 from pathlib import Path
 from typing import override
 
-import pm2
-from pm2.read_config import PM2App
-import pnpm
+from shell import pnpm, pm2
+from shell.pm2.read_config import PM2App
 from config import DurHackDeploymentConfig
 from deployments import Deployment
 from github_payload_types import PushEvent

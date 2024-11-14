@@ -1,7 +1,6 @@
 from typing import override
 
-import systemctl
-import uwsgi
+from shell import systemctl, uwsgi
 from config import DeployerDeploymentConfig
 from deployments import Deployment
 from github_payload_types import PushEvent
