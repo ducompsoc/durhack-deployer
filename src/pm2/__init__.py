@@ -1,3 +1,4 @@
+from .delete import delete
 from .read_config import read_config
 from .restart import restart
 from .save import save
