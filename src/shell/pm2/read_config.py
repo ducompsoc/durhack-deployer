@@ -4,7 +4,6 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from config import config
 from util import async_subprocess
 
 
