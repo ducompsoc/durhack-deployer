@@ -50,7 +50,7 @@ class QueueWorkerSupervisor:
             raise Exception("Refusing to dispatch main queue worker as it is (seemingly) already running")
         self._logger.debug(SubprocessMessage("Dispatching queue worker ...", subprocess="main"))
         process = await asyncio.create_subprocess_exec(
-            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", "queue_workers.main",
+            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", "queue_workers.main", "--supervised",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -90,7 +90,7 @@ class QueueWorkerSupervisor:
             raise Exception(f"Refusing to dispatch queue worker for deployment '{deployment.slug}' as it is (seemingly) already running")
         self._logger.debug(SubprocessMessage("Dispatching queue worker ...", subprocess=deployment.slug))
         process = await asyncio.create_subprocess_exec(
-            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", deployment.config.worker_module, "-d", deployment.slug,
+            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", deployment.config.worker_module, "-d", deployment.slug, "run", "--supervised",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
