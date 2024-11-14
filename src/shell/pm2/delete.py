@@ -21,7 +21,7 @@ async def delete(
     if result.exit_code <= 0:
         return
 
-    if "not found" in result.stdout:  # pm2 logs errors to stdout
+    if "not found" in result.stderr:
         return
 
     raise Exception(f"`pm2 del '{target}'` exited with status {result.exit_code}; {result.stderr}")
