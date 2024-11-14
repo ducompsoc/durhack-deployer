@@ -1,8 +1,10 @@
 import asyncio
 import argparse
+import signal
 
 from queue_worker_base import run_worker
 from queues import main_queue
+from util.async_interrupt import create_interrupt_future
 
 from .worker import MainQueueWorker
 
@@ -23,11 +25,16 @@ parser.add_argument(
 class MainArgNamespace(argparse.Namespace):
     supervised: bool
 
+    def create_until_future(self):
+        if self.supervised:
+            return create_interrupt_future(signals=[signal.SIGTERM])
+        return create_interrupt_future(signals=[signal.SIGINT, signal.SIGTERM])
+
 
 async def main() -> None:
-    parser.parse_args()
+    args = parser.parse_args(None, MainArgNamespace())
     main_queue.path.mkdir(parents=True, exist_ok=True)
-    await run_worker(MainQueueWorker, main_queue)
+    await run_worker(MainQueueWorker, main_queue, until=args.create_until_future())
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ class DeployerArgNamespace(DeploymentWorkerArgNamespace[DeployerDeploymentConfig
 
 async def run(args: DeployerArgNamespace) -> None:
     args.deployment.queue.path.mkdir(parents=True, exist_ok=True)
-    await run_worker(DeployerQueueWorker, args.deployment)
+    await run_worker(DeployerQueueWorker, args.deployment, until=args.create_until_future())
 
 
 async def deploy(args: DeployerArgNamespace) -> None:

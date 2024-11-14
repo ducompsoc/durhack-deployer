@@ -20,7 +20,7 @@ class NginxArgNamespace(DeploymentWorkerArgNamespace[NginxDeploymentConfig]):
 
 async def run(args: NginxArgNamespace) -> None:
     args.deployment.queue.path.mkdir(parents=True, exist_ok=True)
-    await run_worker(NginxQueueWorker, args.deployment)
+    await run_worker(NginxQueueWorker, args.deployment, until=args.create_until_future())
 
 
 async def deploy(args: NginxArgNamespace) -> None:

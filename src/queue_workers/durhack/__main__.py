@@ -23,7 +23,7 @@ class DurHackArgNamespace(DeploymentWorkerArgNamespace[DurHackDeploymentConfig])
 
 async def run(args: DurHackArgNamespace) -> None:
     args.deployment.queue.path.mkdir(parents=True, exist_ok=True)
-    await run_worker(DurHackQueueWorker, args.deployment)
+    await run_worker(DurHackQueueWorker, args.deployment, until=args.create_until_future())
 
 
 async def deploy(args: DurHackArgNamespace) -> None:

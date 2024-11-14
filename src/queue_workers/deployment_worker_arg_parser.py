@@ -1,9 +1,11 @@
 import argparse
+import signal
 from dataclasses import dataclass
 from typing import Type
 
 from config import BaseDeploymentConfig
 from deployments import Deployment, lookup_deployment_by_slug
+from util.async_interrupt import create_interrupt_future
 
 
 @dataclass
@@ -71,3 +73,8 @@ def make_deployment_worker_argument_parser[DeploymentConfig: BaseDeploymentConfi
 class DeploymentWorkerArgNamespace[DeploymentConfig: BaseDeploymentConfig](argparse.Namespace):
     deployment: Deployment[DeploymentConfig]
     supervised: bool
+
+    def create_until_future(self):
+        if self.supervised:
+            return create_interrupt_future(signals=[signal.SIGTERM])
+        return create_interrupt_future(signals=[signal.SIGINT, signal.SIGTERM])
