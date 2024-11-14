@@ -49,7 +49,7 @@ class QueueWorkerSupervisor:
             raise Exception("Refusing to dispatch main queue worker as it is (seemingly) already running")
         self._logger.debug(SubprocessMessage("Dispatching queue worker ...", subprocess="main"))
         process = await asyncio.create_subprocess_exec(
-            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", "main_queue_worker",
+            str(Path(project_root_dir, ".venv", "bin", "python")), "-m", "queue_workers.main",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

@@ -48,38 +48,38 @@ type FilterRule = Annotated[
 
 
 class NginxDeploymentConfig(BaseDeploymentConfig):
-    worker_module: ClassVar[str] = "nginx_queue_worker"
+    worker_module: ClassVar[str] = "queue_workers.nginx"
     repository: Literal["ducompsoc/durhack-nginx"]
     sites: List[FilterRule]
     """Filter rules for configuration files from the ``production`` directory."""
 
 
 class DurHackDeploymentConfig(BaseDeploymentConfig):
-    worker_module: ClassVar[str] = "durhack_queue_worker"
+    worker_module: ClassVar[str] = "queue_workers.durhack"
     repository: Literal["ducompsoc/durhack"]
     instance_name: str
 
 
 class GuildsDeploymentConfig(BaseDeploymentConfig):
-    worker_module: ClassVar[str] = "guilds_queue_worker"
+    worker_module: ClassVar[str] = "queue_workers.guilds"
     repository: Literal["ducompsoc/durhack-guilds"]
     instance_name: str
 
 
 class LiveDeploymentConfig(BaseDeploymentConfig):
-    worker_module: ClassVar[str] = "live_queue_worker"
+    worker_module: ClassVar[str] = "queue_workers.live"
     repository: Literal["ducompsoc/durhack-live"]
     instance_name: str
 
 
 class JuryDeploymentConfig(BaseDeploymentConfig):
-    worker_module: ClassVar[str] = "jury_queue_worker"
+    worker_module: ClassVar[str] = "queue_workers.jury"
     repository: Literal["ducompsoc/durhack-jury"]
     instance_name: str
 
 
 class DeployerDeploymentConfig(BaseDeploymentConfig):
-    worker_module: ClassVar[str] = "deployer_queue_worker"
+    worker_module: ClassVar[str] = "queue_workers.deployer"
     repository: Literal["ducompsoc/durhack-deployer"]
     systemd_unit_name: str
     uwsgi_config_path: Path
