@@ -3,13 +3,13 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from logging import Logger, getLogger
 from pathlib import Path
-import signal
 from typing import override, Type
 
 from watchdog.events import FileClosedEvent
 
 from aio_watchdog import AIOWatchdog, AIOEventHandler
 from queues import Queue, base_queue
+from util.async_interrupt import create_interrupt_future
 
 
 class QueueDirectoryListener(AIOEventHandler):
@@ -101,9 +101,7 @@ class QueueWorkerBase:
 
 async def run_worker(worker_factory: Type[QueueWorkerBase], *args, **kwargs) -> None:
     loop = asyncio.get_running_loop()
-    interrupted = loop.create_future()
-    loop.add_signal_handler(signal.SIGINT, interrupted.set_result, None)
-    loop.add_signal_handler(signal.SIGTERM, interrupted.set_result, None)
+    interrupted = create_interrupt_future(loop)
 
     worker = worker_factory(*args, **kwargs, loop=loop)
     async with worker.run():

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Type, Optional
 
 from definitions import project_root_dir
+from util.async_interrupt import create_interrupt_future
 
 if TYPE_CHECKING:
     from asyncio.subprocess import Process
@@ -199,9 +200,7 @@ class QueueWorkerSupervisor:
 
 async def run_supervisor(supervisor_factory: Type[QueueWorkerSupervisor], *args, **kwargs) -> None:
     loop = asyncio.get_running_loop()
-    interrupted = loop.create_future()
-    loop.add_signal_handler(signal.SIGINT, interrupted.set_result, None)
-    loop.add_signal_handler(signal.SIGTERM, interrupted.set_result, None)
+    interrupted = create_interrupt_future(loop)
 
     supervisor = supervisor_factory(*args, **kwargs, loop=loop)
     async with supervisor.run():
