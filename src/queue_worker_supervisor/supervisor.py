@@ -198,13 +198,21 @@ class QueueWorkerSupervisor:
             self._logger.info("goodbye")
 
 
-async def run_supervisor(supervisor_factory: Type[QueueWorkerSupervisor], *args, **kwargs) -> None:
-    loop = asyncio.get_running_loop()
-    interrupted = create_interrupt_future(loop)
+async def run_supervisor(
+    supervisor_factory: Type[QueueWorkerSupervisor],
+    *args,
+    until: asyncio.Future | None = None,
+    **kwargs,
+) -> None:
+    if until is not None:
+        loop = until.get_loop()
+    else:
+        loop = asyncio.get_running_loop()
+        until = create_interrupt_future(loop)
 
     supervisor = supervisor_factory(*args, **kwargs, loop=loop)
     async with supervisor.run():
-        await interrupted
+        await until
 
 
 async def main() -> None:

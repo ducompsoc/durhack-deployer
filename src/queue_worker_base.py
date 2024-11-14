@@ -99,13 +99,21 @@ class QueueWorkerBase:
                 await asyncio.wait(self.queue_item_tasks)
 
 
-async def run_worker(worker_factory: Type[QueueWorkerBase], *args, **kwargs) -> None:
-    loop = asyncio.get_running_loop()
-    interrupted = create_interrupt_future(loop)
+async def run_worker(
+    worker_factory: Type[QueueWorkerBase],
+    *args,
+    until: asyncio.Future | None = None,
+    **kwargs,
+) -> None:
+    if until is not None:
+        loop = until.get_loop()
+    else:
+        loop = asyncio.get_running_loop()
+        until = create_interrupt_future(loop)
 
     worker = worker_factory(*args, **kwargs, loop=loop)
     async with worker.run():
-        await interrupted
+        await until
 
 
 async def main() -> None:
