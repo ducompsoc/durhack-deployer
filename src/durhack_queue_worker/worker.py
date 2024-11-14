@@ -54,6 +54,3 @@ class DurHackQueueWorker(GitHubRepositoryQueueWorker):
         await pnpm.exec(self.config.path, "prisma migrate deploy", "{server}")
         await pnpm.run(self.config.path, "generate", "{server}...")
         await pnpm.run(self.config.path, "build", "{server}...")
-
-    async def start_process(self) -> None:
-
