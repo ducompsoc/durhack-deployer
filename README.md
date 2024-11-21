@@ -30,7 +30,7 @@
   - it uses [sqlalchemy](https://www.sqlalchemy.org/), a Python ORM, to access a postgres database
   - it uses [alembic](https://alembic.sqlalchemy.org/en/latest/), a database migration tool, to manage changes to
     the database (hopefully) without losing access to data
-- To facilitate 'locking' inter-process shared resource to prevent concurrent access, we want an in-memory database.
+- (Currently unused - not necessary, keeping these instructions just-in-case) To facilitate 'locking' inter-process shared resource to prevent concurrent access, we want an in-memory database.
   Joe chose [dragonfly](https://www.dragonflydb.io), which is "a drop-in Redis replacement".
   - [copy the download link for a dragonfly executable archive](https://github.com/dragonflydb/dragonfly/releases) (usually, `x86-64.tar.gz`)
   - `sudo mkdir /opt/dragonfly/ && cd /opt/dragonfly` - create `/opt/dragonfly` and `cd` into it
@@ -75,15 +75,14 @@
     - the user needs to be able to read from/write to the `/etc/nginx/conf.d` directory
 
     We will have to make use of a few systems to satisfy all constraints.
-  - Create the user.
+  - Create the user (and group):
     ```bash
-    sudo adduser durhack-deployer --group --system --disabled-password --home /var/www/durhack-deployer --shell /bin/bash
+    sudo adduser durhack-deployer --disabled-password --home /home/durhack-deployer
     ```
-    - `--group`: also create a group with the same name as the user, and add the user to it
-    - `--system`: create a system user (a user with 'account expiry: never', and a `uid` < 999)
     - `--disabled-password`: do not set a password, but still permit login (for example via `sudo -u` or SSH)
-    - `--home ...`: set the home directory (`$HOME`, `~`) for the user to `...`
-    - `--shell ...`: set the path to the executable used when creating shells for the user (could be `/bin/zsh` etc.)
+    - `--home home`: set the home directory (`$HOME`, `~`) for the user to `home`
+
+    (you can leave all the user information fields blank, just keep pressing `Enter` until 'Is the information correct?')
   - We create a file in `/etc/sudoers.d` which will be included by `/etc/sudoers`.
     ```bash
     $ cd /etc/sudoers.d
