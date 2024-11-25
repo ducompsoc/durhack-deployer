@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# script should exit if any command fails
+grep -F e <<< "$-"; errexit_unset=$?
+((errexit_unset)) \
+  && set -o errexit \
+  && trap "set +o errexit" RETURN
+
 # setup nvm
 export PROFILE="/dev/null"
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
