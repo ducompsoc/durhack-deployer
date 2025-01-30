@@ -28,7 +28,7 @@ class NginxQueueWorker(GitHubRepositoryQueueWorker):
 
         return False
 
-    site_file_name_pattern: ClassVar[re.Pattern] = re.compile("^\\[(?P<site_name>.*)\\]\\.(?:nginx)conf(?:\\.disabled)?$")
+    site_file_name_pattern: ClassVar[re.Pattern] = re.compile("^\\[(?P<site_name>.*)\\]\\.(?:nginx)?conf(?:\\.disabled)?$")
 
     @classmethod
     def is_site_file(cls, path: Path) -> bool:
