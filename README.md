@@ -13,7 +13,7 @@
 - The application needs to persist some information (specifically, GitHub event IDs of previously processed events)
   - it uses [sqlalchemy](https://www.sqlalchemy.org/), a Python ORM, to access a postgres database
   - it uses [alembic](https://alembic.sqlalchemy.org/en/latest/), a database migration tool, to manage changes to
-    the database (hopefully) without losing access to data
+    the database without data loss (hopefully)
 - The application uses a file-system based 'queue' to allow it to respond quickly to GitHub when new events are delivered,
   despite those events triggering long-running webhook handlers.
   - a 'queue directory' is a directory whose files are queue entries.
