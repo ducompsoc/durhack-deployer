@@ -25,6 +25,7 @@
   steps, e.g. running `pnpm build`.
 
 ## Stack/Tooling
+
 - Most dependencies are explained by comments in `Pipfile`, which is analogous to `package.json` in a JavaScript project.
   The program that interacts with / restores environment using the `Pipfile` is [pipenv](https://pipenv.pypa.io/en/latest/)
 - The main HTTP server is a [Flask](https://flask.palletsprojects.com/en/3.0.x/) application listening on port `3400`
