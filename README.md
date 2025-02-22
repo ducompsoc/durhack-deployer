@@ -33,41 +33,6 @@
     repository.
     These repository-specific routines are responsible for checking out new changes and performing build/deployment
     steps, e.g. running `pnpm build`.
-- (Currently unused - not necessary, keeping these instructions just-in-case) To facilitate 'locking' inter-process shared resource to prevent concurrent access, we want an in-memory database.
-  Joe chose [dragonfly](https://www.dragonflydb.io), which is "a drop-in Redis replacement".
-  - [copy the download link for a dragonfly executable archive](https://github.com/dragonflydb/dragonfly/releases) (usually, `x86-64.tar.gz`)
-  - `sudo mkdir /opt/dragonfly/ && cd /opt/dragonfly` - create `/opt/dragonfly` and `cd` into it
-  - `sudo wget [paste link]` - download the archive you copied the link for
-  - `sudo mkdir ./dragonfly-v1.23.2` - create a directory for the version you downloaded (get version number from GitHub)
-  - `sudo tar -xf dragonfly-x86_64.tar.gz -C ./dragonfly-v1.23.2` - unpack the archive into the directory you created
-  - `sudo rm dragonfly-x84_64.tar.gz` - remove the archive as we don't need it anymore
-  - `sudo ln -s ./dragonfly-v1.23.2 ./dragonfly-current` - create a symlink `dragonfly-current` which points to `dragonfly-v1.23.2`
-  - `sudo ln -s /opt/dragonfly/dragonfly-current/dragonfly-x86_64 /usr/local/bin/dragonfly` - create a symlink `dragonfly` in `/usr/local/bin`
-    which points to the binary `dragonfly-x84_64` in `/opt/dragonfly/dragonfly-current`
-  - `dragonfly --help` to test that dragonfly has successfully been installed
-  - `sudo apt install redis-tools` so we can use `redis-cli` as a database client for dragonfly
-  - Create a new user `dragonfly` with homedir `/var/lib/dragonfly`
-    - `sudo adduser dragonfly --group --system --disabled-password --home /var/lib/dragonfly --shell /bin/bash`
-    - `cd /var/lib && sudo chmod o+rx dragonfly` - to others (`o`), add (`+`) read (`r`) and execute (`x`) perms on
-      dragonfly's home directory
-  - Create a service file at `/etc/systemd/system/dragonfly.service`:
-    ```
-    [Unit]
-    Description=Dragonfly In-Memory Data Store
-    After=network.target
-
-    [Service]
-    User=dragonfly
-    Group=dragonfly
-    ExecStart=/usr/local/bin/dragonfly --dir /var/lib/dragonfly
-    ExecStop=/usr/bin/redis-cli shutdown
-    Restart=always
-
-    [Install]
-    WantedBy=multi-user.target
-    ```
-  - `sudo systemctl daemon-reload` so that `systemd` will check for new service units,
-  - `sudo systemctl start dragonfly` to start dragonfly as a daemon (background process)
 - About the `durhack-deployer` user
   - **Q: Why don't we just use `root`?**
     **A:** anything that does not need to run as `root`, should not run as `root`.
