@@ -76,7 +76,7 @@ We will have to make use of a few systems to satisfy all constraints.
   ```bash
   sudo adduser durhack-deployer --disabled-password --home /home/durhack-deployer
   ```
-  - `--disabled-password`: do not set a password, but still permit login (for example via `sudo -u` or SSH)
+  - `--disabled-password`: do not set a password, but still permit login (for example via `sudo machinectl shell` or SSH)
   - `--home home`: set the home directory (`$HOME`, `~`) for the user to `home`
 
   (you can leave all the user information fields blank, just keep pressing `Enter` until 'Is the information correct?')
