@@ -1,3 +1,7 @@
+# systemd service definition for the queue workers
+# this should be copied to e.g. `/etc/systemd/system/durhack-deployer-queue-workers.service`.
+# it then needs to be amended accordingly (filepaths, in particular).
+
 [Unit]
 Description=DurHack Deployer Queue Workers
 
