@@ -11,7 +11,7 @@ async def install(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f"pipenv install --deploy --dev",
+        f"uv sync --active --frozen",
         cwd=path,
     )
 
