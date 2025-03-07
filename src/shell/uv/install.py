@@ -11,11 +11,11 @@ async def install(
     logger = logger if logger is not None else getLogger(__name__)
 
     result = await async_subprocess.run(
-        f"pipenv install --deploy --dev",
+        f"uv sync --active --frozen",
         cwd=path,
     )
 
     if result.exit_code <= 0:
         return
 
-    raise Exception(f"`pipenv install` exited with status {result.exit_code}; {result.stderr}")
+    raise Exception(f"`uv sync` exited with status {result.exit_code}; {result.stderr}")

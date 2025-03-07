@@ -55,3 +55,8 @@ async def add_deployment_user(username: str) -> str:
 @script_callable
 async def deployment_user_self_setup(username: str) -> str:
     return f"systemd-run --wait --collect --user --machine='{username}'@ bash '{script_path("deployment-user-self-setup.sh")}'"
+
+
+@script_callable
+async def migrate() -> str:
+    return f"'{script_path("migrate.sh")}'"

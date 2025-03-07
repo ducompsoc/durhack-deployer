@@ -12,12 +12,10 @@
 !.gitattributes
 !.git-blame-ignore-revs
 
-## Pipenv
-!Pipfile
-!Pipfile.lock
-!.venv
-.venv/*
-!.venv/.gitkeep
+## uv (package manager)
+!/pyproject.toml
+!/uv.lock
+!/.python-version
 
 ## Tooling config
 !/alembic.ini
@@ -35,7 +33,9 @@
 !/config
 !/alembic
 
-## Python caches
-**/__pycache__
+## Python caches/compiled files
+__pycache__/
+*.py[oc]
+*.egg-info
 
 # Explicit exceptions/ignores

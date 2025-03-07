@@ -26,8 +26,11 @@
 
 ## Stack/Tooling
 
-- Most dependencies are explained by comments in `Pipfile`, which is analogous to `package.json` in a JavaScript project.
-  The program that interacts with / restores environment using the `Pipfile` is [pipenv](https://pipenv.pypa.io/en/latest/)
+- Most dependencies are explained by comments in `pyproject.toml`, which is analogous to `package.json` in a JavaScript project.
+  There are various programs for interacting with / restoring environment using the `pyproject.toml` (also similar to
+  `package.json`, which has e.g. `npm`, `pnpm`, `yarn`)
+  - Joe uses [`uv`](https://docs.astral.sh/uv/)
+  - Another option is [`poetry`](https://python-poetry.org/)
 - The main HTTP server is a [Flask](https://flask.palletsprojects.com/en/3.0.x/) application listening on port `3400`
   - Flask implements the [WSGI](https://wsgi.readthedocs.io/en/latest/what.html)
   - This means that in production, you shouldn't just use the Flask development server.
