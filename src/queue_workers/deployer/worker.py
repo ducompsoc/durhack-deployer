@@ -1,6 +1,6 @@
 from typing import override
 
-from shell import pipenv, systemctl, uwsgi
+from shell import pipenv, systemctl, uwsgi, scripts
 from config import DeployerDeploymentConfig
 from deployments import Deployment
 from github_payload_types import PushEvent
@@ -21,6 +21,6 @@ class DeployerQueueWorker(GitHubRepositoryQueueWorker):
 
     async def deploy(self) -> None:
         await pipenv.install(self.config.path)
-        await pipenv.run(self.config.path, "migrate")
+        await scripts.migrate(cwd=self.config.path)
         await uwsgi.reload(self.config.uwsgi_config_path, self._logger)
         await systemctl.restart(self.config.systemd_unit_name, block=False, logger=self._logger)
