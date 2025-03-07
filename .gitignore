@@ -12,10 +12,6 @@
 !.gitattributes
 !.git-blame-ignore-revs
 
-## Pipenv
-!Pipfile
-!Pipfile.lock
-
 ## uv (package manager)
 !/pyproject.toml
 !/uv.lock
