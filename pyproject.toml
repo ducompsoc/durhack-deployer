@@ -1,0 +1,22 @@
+[project]
+name = "durhack-deployer"
+dynamic = ["version"]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp-client-cache ==0.12.*, >=0.12.2", # analogous to 'fetch'; an HTTP/1.1 client with response-caching capabilities
+    "colorlog ==6.*, >=6.9.0", # colorful console logging!
+    "crossplane ==0.5.*, >=0.5.8", # nginx config parser - use this to find domain names / patch config files accordingly
+    "flask[async] ==3.*, >=3.0.3", # analogous-ish to Express; a framework for defining HTTP request handlers with middleware
+    "psycopg ==3.*, >=3.2.3", # postgresql database client for Python
+    "pydantic ==2.*, >=2.9.2", # analogous to Zod; a data validation library
+    "python-dotenv ==1.*, >=1.0.1", # load values from `.env` files
+    "sqlalchemy ==2.*, >=2.0.35", # analogous to @prisma/client: an ORM
+    "watchdog ==5.*, >=5.0.3", # file watcher - intend to use this for listening for lockfiles being removed
+]
+
+[dependency-groups]
+dev = [
+    "alembic == 1.*, >=1.13.3",  # analogous to the Prisma CLI: a database migration tool
+    "ruff ==0.6.*, >=0.6.9",  # analogous to Biome; a linter/formatter for Python
+]
