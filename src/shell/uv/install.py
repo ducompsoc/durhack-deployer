@@ -18,4 +18,4 @@ async def install(
     if result.exit_code <= 0:
         return
 
-    raise Exception(f"`pipenv install` exited with status {result.exit_code}; {result.stderr}")
+    raise Exception(f"`uv sync` exited with status {result.exit_code}; {result.stderr}")
