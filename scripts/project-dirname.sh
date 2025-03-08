@@ -5,3 +5,7 @@ SCRIPTS_DIRNAME=$(dirname "$( readlink -f "${BASH_SOURCE[0]:-"$( command -v -- "
 PROJECT_DIRNAME=$(dirname "$SCRIPTS_DIRNAME")
 declare -r PROJECT_DIRNAME
 export PROJECT_DIRNAME
+
+REPOSITORY_FULL_NAME="ducompsoc/durhack-deployer"
+declare -r REPOSITORY_FULL_NAME
+export REPOSITORY_FULL_NAME
