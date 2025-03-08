@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-REPOSITORY_FULL_NAME="ducompsoc/durhack-deployer"
-declare -r REPOSITORY_FULL_NAME
-export REPOSITORY_FULL_NAME
+# https://stackoverflow.com/a/77663806/11045433
+SCRIPTS_DIRNAME=$(dirname "$( readlink -f "${BASH_SOURCE[0]:-"$( command -v -- "$0" )"}" )")
+
+source "$SCRIPTS_DIRNAME"/definitions.sh
 
 # shellcheck disable=SC2155 # Intended dynamic declaration
 declare -A hook_options="($(
@@ -45,4 +46,7 @@ else
   HOOK_ID=${hook_ids[$((opt-1))]}
 fi
 
+HOOK_URL="${hook_options[$HOOK_ID]}"
+
 export HOOK_ID
+export HOOK_URL
