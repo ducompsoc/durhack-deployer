@@ -9,3 +9,15 @@ export PROJECT_DIRNAME
 REPOSITORY_FULL_NAME="ducompsoc/durhack-deployer"
 declare -r REPOSITORY_FULL_NAME
 export REPOSITORY_FULL_NAME
+
+function get_webhook_proxy_url() {
+  source "$PROJECT_DIRNAME"/.env
+
+  if [ -z "$WEBHOOK_PROXY_URL" ]; then
+    echo "WEBHOOK_PROXY_URL is unset; add it to your .env" >&2
+    return 1
+  fi
+
+  echo "$WEBHOOK_PROXY_URL"
+}
+export get_webhook_proxy_url
