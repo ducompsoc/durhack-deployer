@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 REPOSITORY_FULL_NAME="ducompsoc/durhack-deployer"
 declare -r REPOSITORY_FULL_NAME

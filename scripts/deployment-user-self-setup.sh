@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # script should exit if any command fails
 grep -F e <<< "$-"; errexit_unset=$?
