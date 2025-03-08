@@ -46,4 +46,7 @@ else
   HOOK_ID=${hook_ids[$((opt-1))]}
 fi
 
+HOOK_URL="${hook_options[$HOOK_ID]}"
+
 export HOOK_ID
+export HOOK_URL
