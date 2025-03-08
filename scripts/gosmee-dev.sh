@@ -4,13 +4,8 @@
 SCRIPTS_DIRNAME=$(dirname "$( readlink -f "${BASH_SOURCE[0]:-"$( command -v -- "$0" )"}" )")
 
 source "$SCRIPTS_DIRNAME"/definitions.sh
-source "$PROJECT_DIRNAME"/.env
-
-if [ -z "$WEBHOOK_PROXY_URL" ]; then
-  echo "WEBHOOK_PROXY_URL is unset"
-  exit 1
-fi
+webhook_proxy_url="$(get_webhook_proxy_url)"
 
 gosmee client \
-  "$WEBHOOK_PROXY_URL" \
+  "$webhook_proxy_url" \
   "http://deploy.durhack-dev.com/github-webhook"
