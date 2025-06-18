@@ -8,6 +8,13 @@ branch = "main"
 path = "/var/www/api.durhack.com"
 instance_name = "api.durhack.com"
 
+[deployments.durhack-staging-api]
+repository = "ducompsoc/durhack"
+enabled = true
+branch = "staging"
+path = "/var/www/api.durhack-staging.com"
+instance_name = "api.durhack-staging.com"
+
 [deployments.deployer]
 repository = "ducompsoc/durhack-deployer"
 enabled = true
