@@ -19,7 +19,7 @@ async def install(
     filter_option = "" if filter_selector is None else f"--filter '{filter_selector}'"
 
     result = await async_subprocess.run(
-        f"pnpm -C '{project_path}' {filter_option} install",
+        f"pnpm --dir '{project_path}' {filter_options} install",
         cwd=cwd,
         env=env,
     )

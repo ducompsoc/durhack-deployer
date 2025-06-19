@@ -20,7 +20,7 @@ async def exec(
     filter_option = "" if filter_selector is None else f"--filter '{filter_selector}'"
 
     result = await async_subprocess.run(
-        f"pnpm {filter_option} exec {command}",
+        f"pnpm --dir '{project_path}' {filter_option} exec {command}",
         cwd=cwd,
         env=env,
     )
