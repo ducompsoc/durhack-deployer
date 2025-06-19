@@ -4,4 +4,4 @@ def ensure_cwd_is_none(cwd: str | None) -> None:
 
 
 def get_filter_options(filter_selector: str | None = None) -> str:
-    return "" if filter_selector is None else f"--filter '{filter_selector}'"
+    return "" if filter_selector is None else f"--filter '{filter_selector}' --fail-if-no-match"
