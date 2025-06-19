@@ -2,7 +2,7 @@ from logging import Logger, getLogger
 from pathlib import Path
 
 from util import async_subprocess
-from shell.pnpm._util import get_filter_options
+from shell.pnpm._util import ensure_cwd_is_none, get_filter_options
 
 
 async def install(
@@ -13,8 +13,7 @@ async def install(
     logger: Logger | None = None,
 ) -> None:
     logger = logger if logger is not None else getLogger(__name__)
-    if cwd is not None:
-        raise ValueError("cwd must be None for pnpm commands: https://github.com/ducompsoc/durhack-deployer/issues/12")
+    ensure_cwd_is_none(cwd)
     cwd=project_path
 
     filter_options = get_filter_options(filter_selector)
