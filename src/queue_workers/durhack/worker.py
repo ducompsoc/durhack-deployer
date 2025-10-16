@@ -14,7 +14,7 @@ from github_repository_queue_worker import GitHubRepositoryQueueWorker
 class DurHackQueueWorker(GitHubRepositoryQueueWorker):
     def __init__(self, deployment: Deployment[DurHackDeploymentConfig], *args, **kwargs):
         super().__init__(deployment, *args, **kwargs)
-        self.pm2_ecosystem_file = Path(self.config.path, "ecosystem.config.cjs")
+        self.pm2_ecosystem_file = Path(self.config.path, "ecosystem.config.js")
 
     def get_pm2_env(self):
         pm2_env = os.environ.copy()
