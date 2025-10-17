@@ -31,10 +31,7 @@ async def read_config(
         raise Exception(f"`node ...` exited with status {result.exit_code}; {result.stderr}")
 
     module = json.loads(result.stdout)
-    if not "default" in module:
-        raise Exception(f"{ecosystem_file} is missing default export")
-
-    raw_ecosystem = module["default"]
+    raw_ecosystem = module.get("default", module)
     if not isinstance(raw_ecosystem, dict):
         raise Exception(f"{ecosystem_file}'s default export is not a record-like object")
 
