@@ -1,0 +1,25 @@
+# deploy-event.durhack.com is the instance of durhack-deployer running on the event VPS
+origin = "https://deploy-event.durhack.com"
+
+[deployments.deployer]
+repository = "ducompsoc/durhack-deployer"
+enabled = true
+branch = "main"
+path = "/var/www/deploy-event.durhack.com"
+systemd_unit_name = "durhack-deployer-queue-workers"
+uwsgi_config_path = "/etc/uwsgi/vassals/deploy-event.durhack.com.ini"
+
+[deployments.nginx]
+repository = "ducompsoc/durhack-nginx"
+enabled = true
+branch = "main"
+path = "/home/durhack/projects/durhack-nginx"
+
+[[deployments.nginx.sites]]
+rule = "include"
+select = [
+    "guilds.durhack.com",
+    "jury.durhack.com",
+    "live.durhack.com",
+    "deploy-event.durhack.com",
+]
